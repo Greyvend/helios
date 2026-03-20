@@ -1196,7 +1196,7 @@ export default function Sidebar() {
                 render={
                   <button
                     type="button"
-                    aria-label="Add project"
+                    aria-label={shouldShowProjectPathEntry ? "Cancel add project" : "Add project"}
                     aria-pressed={shouldShowProjectPathEntry}
                     className="inline-flex size-5 cursor-pointer items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
                     onClick={handleStartAddProject}
@@ -1209,7 +1209,9 @@ export default function Sidebar() {
                   }`}
                 />
               </TooltipTrigger>
-              <TooltipPopup side="right">Add project</TooltipPopup>
+              <TooltipPopup side="right">
+                {shouldShowProjectPathEntry ? "Cancel add project" : "Add project"}
+              </TooltipPopup>
             </Tooltip>
           </div>
 
