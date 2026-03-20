@@ -1,4 +1,4 @@
-import type { UserInputQuestion } from "@t3tools/contracts";
+import type { UserInputQuestion } from "@helios-dev/contracts";
 
 export interface PendingUserInputDraftAnswer {
   selectedOptionLabel?: string;

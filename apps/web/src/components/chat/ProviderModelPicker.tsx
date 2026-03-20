@@ -1,5 +1,5 @@
-import { type ModelSlug, type ProviderKind } from "@t3tools/contracts";
-import { normalizeModelSlug } from "@t3tools/shared/model";
+import { type ModelSlug, type ProviderKind } from "@helios-dev/contracts";
+import { normalizeModelSlug } from "@helios-dev/shared/model";
 import { memo, useState } from "react";
 import { type ProviderPickerKind, PROVIDER_OPTIONS } from "../../session-logic";
 import { ChevronDownIcon } from "lucide-react";

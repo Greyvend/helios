@@ -13,7 +13,7 @@ import {
   type ModelSlug,
   type ProviderReasoningEffort,
   type ProviderKind,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 
 const MODEL_SLUG_SET_BY_PROVIDER: Record<ProviderKind, ReadonlySet<ModelSlug>> = {
   claudeAgent: new Set(MODEL_OPTIONS_BY_PROVIDER.claudeAgent.map((option) => option.slug)),

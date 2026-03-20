@@ -5,12 +5,12 @@ import {
   ThreadId,
   type OrchestrationReadModel,
   type OrchestrationSessionStatus,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import {
   inferProviderForModel,
   resolveModelSlug,
   resolveModelSlugForProvider,
-} from "@t3tools/shared/model";
+} from "@helios-dev/shared/model";
 import { create } from "zustand";
 import { type ChatMessage, type Project, type Thread } from "./types";
 import { Debouncer } from "@tanstack/react-pacer";
@@ -23,8 +23,14 @@ export interface AppState {
   threadsHydrated: boolean;
 }
 
-const PERSISTED_STATE_KEY = "t3code:renderer-state:v8";
+const PERSISTED_STATE_KEY = "helios:renderer-state:v8";
 const LEGACY_PERSISTED_STATE_KEYS = [
+  "helios:renderer-state:v7",
+  "helios:renderer-state:v6",
+  "helios:renderer-state:v5",
+  "helios:renderer-state:v4",
+  "helios:renderer-state:v3",
+  "t3code:renderer-state:v8",
   "t3code:renderer-state:v7",
   "t3code:renderer-state:v6",
   "t3code:renderer-state:v5",

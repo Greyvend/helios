@@ -20,7 +20,7 @@ import {
   OrchestrationThreadActivity,
   ProviderInteractionMode,
   RuntimeMode,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import {
   applyClaudePromptEffortPrefix,
   getDefaultModel,
@@ -33,7 +33,7 @@ import {
   resolveReasoningEffortForProvider,
   resolveModelSlugForProvider,
   supportsClaudeUltrathinkKeyword,
-} from "@t3tools/shared/model";
+} from "@helios-dev/shared/model";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDebouncedValue } from "@tanstack/react-pacer";

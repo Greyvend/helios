@@ -9,10 +9,10 @@ import {
   ProviderModelOptions,
   RuntimeMode,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import * as Schema from "effect/Schema";
 import { DeepMutable } from "effect/Types";
-import { normalizeModelSlug } from "@t3tools/shared/model";
+import { normalizeModelSlug } from "@helios-dev/shared/model";
 import { getLocalStorageItem } from "./hooks/useLocalStorage";
 import { DEFAULT_INTERACTION_MODE, DEFAULT_RUNTIME_MODE, type ChatImageAttachment } from "./types";
 import {
@@ -24,7 +24,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createDebouncedStorage, createMemoryStorage } from "./lib/storage";
 
-export const COMPOSER_DRAFT_STORAGE_KEY = "t3code:composer-drafts:v1";
+export const COMPOSER_DRAFT_STORAGE_KEY = "helios:composer-drafts:v1";
 const COMPOSER_DRAFT_STORAGE_VERSION = 2;
 const DraftThreadEnvModeSchema = Schema.Literals(["local", "worktree"]);
 export type DraftThreadEnvMode = typeof DraftThreadEnvModeSchema.Type;

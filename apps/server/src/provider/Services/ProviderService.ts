@@ -23,7 +23,7 @@ import type {
   ProviderStopSessionInput,
   ThreadId,
   ProviderTurnStartResult,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import { ServiceMap } from "effect";
 import type { Effect, Stream } from "effect";
 

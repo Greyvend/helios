@@ -33,7 +33,7 @@ import {
   ThreadId,
   type GitStatusResult,
   type ResolvedKeybindingsConfig,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useAppSettings } from "../appSettings";
@@ -163,10 +163,10 @@ function prStatusIndicator(pr: ThreadPr): PrStatusIndicator | null {
   return null;
 }
 
-function T3Wordmark() {
+function HeliosWordmark() {
   return (
     <svg
-      aria-label="T3"
+      aria-label="Helios"
       className="h-2.5 w-auto shrink-0 text-foreground"
       viewBox="15.5309 37 94.3941 56.96"
       xmlns="http://www.w3.org/2000/svg"
@@ -1153,7 +1153,7 @@ export default function Sidebar() {
         <TooltipTrigger
           render={
             <div className="flex min-w-0 flex-1 items-center gap-1 ml-1 cursor-pointer">
-              <T3Wordmark />
+              <HeliosWordmark />
               <span className="truncate text-sm font-medium tracking-tight text-muted-foreground">
                 Code
               </span>

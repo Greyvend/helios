@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import type { ProviderRuntimeEvent, ProviderSession } from "@t3tools/contracts";
+import type { ProviderRuntimeEvent, ProviderSession } from "@helios-dev/contracts";
 import {
   ApprovalRequestId,
   CommandId,
@@ -12,7 +12,7 @@ import {
   ProjectId,
   ThreadId,
   TurnId,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import { Effect, Exit, Layer, ManagedRuntime, PubSub, Scope, Stream } from "effect";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -88,7 +88,7 @@ describe("ProviderCommandReactor", () => {
     readonly threadModel?: string;
   }) {
     const now = new Date().toISOString();
-    const stateDir = input?.stateDir ?? fs.mkdtempSync(path.join(os.tmpdir(), "t3code-reactor-"));
+    const stateDir = input?.stateDir ?? fs.mkdtempSync(path.join(os.tmpdir(), "helios-reactor-"));
     const threadModel = input?.threadModel ?? "gpt-5-codex";
     createdStateDirs.add(stateDir);
     const runtimeEventPubSub = Effect.runSync(PubSub.unbounded<ProviderRuntimeEvent>());

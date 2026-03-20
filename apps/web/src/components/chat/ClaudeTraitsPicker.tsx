@@ -3,7 +3,7 @@ import {
   type ClaudeModelOptions,
   type ProviderModelOptions,
   type ThreadId,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import {
   applyClaudePromptEffortPrefix,
   getDefaultReasoningEffort,
@@ -14,7 +14,7 @@ import {
   supportsClaudeThinkingToggle,
   supportsClaudeUltrathinkKeyword,
   isClaudeUltrathinkPrompt,
-} from "@t3tools/shared/model";
+} from "@helios-dev/shared/model";
 import { memo, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { Button } from "../ui/button";

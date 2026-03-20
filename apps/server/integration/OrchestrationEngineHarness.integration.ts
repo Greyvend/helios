@@ -9,7 +9,7 @@ import {
   ProviderKind,
   type OrchestrationEvent,
   type OrchestrationThread,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import {
   Effect,
   Exit,
