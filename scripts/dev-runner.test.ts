@@ -1,10 +1,10 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
+import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
 
 import {
-  DEFAULT_DEV_STATE_DIR,
   createDevRunnerEnv,
   findFirstAvailableOffset,
   resolveModePortOffsets,
@@ -46,27 +46,24 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
   });
 
   describe("createDevRunnerEnv", () => {
-    it.effect("defaults state dir to ~/.helios/dev when not provided", () =>
+    it.effect("defaults HELIOS_HOME to ~/.t3 when not provided", () =>
       Effect.gen(function* () {
-        const [env, defaultStateDir] = yield* Effect.all([
-          createDevRunnerEnv({
-            mode: "dev",
-            baseEnv: {},
-            serverOffset: 0,
-            webOffset: 0,
-            stateDir: undefined,
-            authToken: undefined,
-            noBrowser: undefined,
-            autoBootstrapProjectFromCwd: undefined,
-            logWebSocketEvents: undefined,
-            host: undefined,
-            port: undefined,
-            devUrl: undefined,
-          }),
-          DEFAULT_DEV_STATE_DIR,
-        ]);
+        const env = yield* createDevRunnerEnv({
+          mode: "dev",
+          baseEnv: {},
+          serverOffset: 0,
+          webOffset: 0,
+          heliosHome: undefined,
+          authToken: undefined,
+          noBrowser: undefined,
+          autoBootstrapProjectFromCwd: undefined,
+          logWebSocketEvents: undefined,
+          host: undefined,
+          port: undefined,
+          devUrl: undefined,
+        });
 
-        assert.equal(env.HELIOS_STATE_DIR, defaultStateDir);
+        assert.equal(env.HELIOS_HOME, resolve(homedir(), ".helios"));
       }),
     );
 
@@ -77,7 +74,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           baseEnv: {},
           serverOffset: 0,
           webOffset: 0,
-          stateDir: "/tmp/override-state",
+          heliosHome: "/tmp/custom-t3",
           authToken: "secret",
           noBrowser: true,
           autoBootstrapProjectFromCwd: false,
@@ -87,7 +84,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           devUrl: new URL("http://localhost:7331"),
         });
 
-        assert.equal(env.HELIOS_STATE_DIR, resolve("/tmp/override-state"));
+        assert.equal(env.HELIOS_HOME, resolve("/tmp/custom-t3"));
         assert.equal(env.HELIOS_PORT, "4222");
         assert.equal(env.VITE_WS_URL, "ws://localhost:4222");
         assert.equal(env.HELIOS_NO_BROWSER, "1");
@@ -107,7 +104,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           },
           serverOffset: 0,
           webOffset: 0,
-          stateDir: undefined,
+          heliosHome: undefined,
           authToken: undefined,
           noBrowser: undefined,
           autoBootstrapProjectFromCwd: undefined,
@@ -129,7 +126,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           baseEnv: {},
           serverOffset: 0,
           webOffset: 0,
-          stateDir: undefined,
+          heliosHome: undefined,
           authToken: undefined,
           noBrowser: undefined,
           autoBootstrapProjectFromCwd: undefined,
@@ -140,6 +137,27 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
         });
 
         assert.equal(env.HELIOS_LOG_WS_EVENTS, "0");
+      }),
+    );
+
+    it.effect("uses custom heliosHome when provided", () =>
+      Effect.gen(function* () {
+        const env = yield* createDevRunnerEnv({
+          mode: "dev",
+          baseEnv: {},
+          serverOffset: 0,
+          webOffset: 0,
+          heliosHome: "/tmp/my-t3",
+          authToken: undefined,
+          noBrowser: undefined,
+          autoBootstrapProjectFromCwd: undefined,
+          logWebSocketEvents: undefined,
+          host: undefined,
+          port: undefined,
+          devUrl: undefined,
+        });
+
+        assert.equal(env.HELIOS_HOME, resolve("/tmp/my-t3"));
       }),
     );
   });

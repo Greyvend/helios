@@ -27,10 +27,10 @@ export const expandHomePath = Effect.fn(function* (input: string) {
   return input;
 });
 
-export const resolveStateDir = Effect.fn(function* (raw: string | undefined) {
+export const resolveBaseDir = Effect.fn(function* (raw: string | undefined) {
   const { join, resolve } = yield* Path.Path;
   if (!raw || raw.trim().length === 0) {
-    return join(OS.homedir(), ".helios", "userdata");
+    return join(OS.homedir(), ".helios");
   }
   return resolve(yield* expandHomePath(raw.trim()));
 });

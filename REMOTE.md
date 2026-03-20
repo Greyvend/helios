@@ -11,7 +11,7 @@ The Helios CLI accepts the following configuration options, available either as 
 | `--mode <web\|desktop>` | `HELIOS_MODE`         | Runtime mode.                      |
 | `--port <number>`       | `HELIOS_PORT`         | HTTP/WebSocket port.               |
 | `--host <address>`      | `HELIOS_HOST`         | Bind interface/address.            |
-| `--state-dir <path>`    | `HELIOS_STATE_DIR`    | State directory.                   |
+| `--base-dir <path>`     | `HELIOS_HOME`         | Base directory.                    |
 | `--dev-url <url>`       | `VITE_DEV_SERVER_URL` | Dev web URL redirect/proxy target. |
 | `--no-browser`          | `HELIOS_NO_BROWSER`   | Disable auto-open browser.         |
 | `--auth-token <token>`  | `HELIOS_AUTH_TOKEN`   | WebSocket auth token.              |

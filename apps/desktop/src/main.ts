@@ -56,12 +56,12 @@ const UPDATE_STATE_CHANNEL = "desktop:update-state";
 const UPDATE_GET_STATE_CHANNEL = "desktop:update-get-state";
 const UPDATE_DOWNLOAD_CHANNEL = "desktop:update-download";
 const UPDATE_INSTALL_CHANNEL = "desktop:update-install";
-const STATE_DIR =
-  process.env.HELIOS_STATE_DIR?.trim() || Path.join(OS.homedir(), ".helios", "userdata");
+const BASE_DIR = process.env.HELIOS_HOME?.trim() || Path.join(OS.homedir(), ".helios");
+const STATE_DIR = Path.join(BASE_DIR, "userdata");
 const DESKTOP_SCHEME = "helios";
 const ROOT_DIR = Path.resolve(__dirname, "../../..");
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
-const APP_DISPLAY_NAME = isDevelopment ? "Helios (Dev)" : "Helios";
+const APP_DISPLAY_NAME = isDevelopment ? "Helios (Dev)" : "Helios (Alpha)";
 const APP_USER_MODEL_ID = "com.helios-dev.helios";
 const USER_DATA_DIR_NAME = isDevelopment ? "helios-dev" : "helios";
 const LEGACY_USER_DATA_DIR_NAME = isDevelopment ? "Helios (Dev)" : "Helios (Alpha)";
@@ -924,7 +924,7 @@ function backendEnv(): NodeJS.ProcessEnv {
     HELIOS_MODE: "desktop",
     HELIOS_NO_BROWSER: "1",
     HELIOS_PORT: String(backendPort),
-    HELIOS_STATE_DIR: STATE_DIR,
+    HELIOS_HOME: BASE_DIR,
     HELIOS_AUTH_TOKEN: backendAuthToken,
   };
 }
