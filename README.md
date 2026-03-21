@@ -1,11 +1,11 @@
 # Helios
 
-Helios is a minimal web GUI for coding agents (currently Codex and Claude, more coming soon).
+Helios is a fork of t3code. It's a minimal web GUI for coding agents (Claude Code, Codex).
 
 ## How to use
 
 > [!WARNING]
-> You need to have [Codex CLI](https://github.com/openai/codex) installed and authorized for Helios to work.
+> You need to have [Codex CLI](https://github.com/openai/codex) or [Claude Code CLI](https://claude.com/product/claude-code) installed and authorized for Helios to work.
 
 ```bash
 npx helios
@@ -14,15 +14,3 @@ npx helios
 You can also just install the desktop app. It's cooler.
 
 Install the [desktop app from the Releases page](https://github.com/Greyvend/helios/releases)
-
-## Some notes
-
-We are very very early in this project. Expect bugs.
-
-We are not accepting contributions yet.
-
-## If you REALLY want to contribute still.... read this first
-
-Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening an issue or PR.
-
-Need support? Join the [Discord](https://discord.gg/jn4EGJjrvv).
