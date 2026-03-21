@@ -1,6 +1,6 @@
 # Helios
 
-Helios is a fork of t3code. It's a minimal web GUI for coding agents (Claude Code, Codex).
+Helios is a fork of [t3code](https://github.com/pingdotgg/t3code). It's a minimal web GUI for coding agents (Claude Code, Codex).
 
 ## How to use
 
