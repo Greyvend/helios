@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
-import { type ProviderKind, DEFAULT_GIT_TEXT_GENERATION_MODEL } from "@helios-dev/contracts";
+import { useCallback, useMemo, useState } from "react";
+import {
+  type ProviderKind,
+  DEFAULT_GIT_TEXT_GENERATION_MODEL,
+  DEFAULT_MODEL_BY_PROVIDER,
+  type ModelSlug,
+} from "@helios-dev/contracts";
 import { getModelOptions, normalizeModelSlug } from "@helios-dev/shared/model";
 import { getAppModelOptions, MAX_CUSTOM_MODEL_LENGTH, useAppSettings } from "../appSettings";
+import { getCustomModelOptionsByProvider } from "../components/ChatView.logic";
 import { resolveAndPersistPreferredEditor } from "../editorPreferences";
 import { isElectron } from "../env";
 import { useTheme } from "../hooks/useTheme";
@@ -20,6 +26,7 @@ import {
 } from "../components/ui/select";
 import { Switch } from "../components/ui/switch";
 import { APP_VERSION } from "../branding";
+import { ProviderModelPicker } from "../components/chat/ProviderModelPicker";
 import { SidebarInset } from "~/components/ui/sidebar";
 
 const THEME_OPTIONS = [
@@ -125,6 +132,14 @@ function SettingsRouteView() {
   const codexHomePath = settings.codexHomePath;
   const keybindingsConfigPath = serverConfigQuery.data?.keybindingsConfigPath ?? null;
   const availableEditors = serverConfigQuery.data?.availableEditors;
+
+  const defaultProvider: ProviderKind = settings.defaultProvider ?? "codex";
+  const defaultModel: ModelSlug =
+    settings.defaultModel ?? DEFAULT_MODEL_BY_PROVIDER[defaultProvider];
+  const modelOptionsByProvider = useMemo(
+    () => getCustomModelOptionsByProvider(settings),
+    [settings],
+  );
 
   const gitTextGenerationModelOptions = getAppModelOptions(
     "codex",
@@ -404,6 +419,27 @@ function SettingsRouteView() {
               </div>
 
               <div className="space-y-5">
+                <div className="flex flex-col gap-4 rounded-lg border border-border bg-background px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground">Default model</p>
+                    <p className="text-xs text-muted-foreground">
+                      Model used for new chats by default.
+                    </p>
+                  </div>
+                  <ProviderModelPicker
+                    provider={defaultProvider}
+                    model={defaultModel}
+                    lockedProvider={null}
+                    modelOptionsByProvider={modelOptionsByProvider}
+                    onProviderModelChange={(provider, model) => {
+                      updateSettings({
+                        defaultProvider: provider,
+                        defaultModel: model,
+                      });
+                    }}
+                  />
+                </div>
+
                 {MODEL_PROVIDER_SETTINGS.map((providerSettings) => {
                   const provider = providerSettings.provider;
                   const customModels = getCustomModelsForProvider(settings, provider);
