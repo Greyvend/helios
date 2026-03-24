@@ -12,7 +12,7 @@ packages/*/dist
 build/
 .logs/
 release/
-.t3
+.helios
 .idea/
 apps/web/.playwright
 apps/web/playwright-report
@@ -20,3 +20,4 @@ apps/web/src/components/__screenshots__
 .vitest-*
 design/
 __screenshots__/
+.tanstack
