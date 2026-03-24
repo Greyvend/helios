@@ -419,7 +419,7 @@ export default function Sidebar() {
           projectId,
           title,
           workspaceRoot: cwd,
-          defaultModel: DEFAULT_MODEL_BY_PROVIDER.codex,
+          defaultModel: appSettings.defaultModel ?? DEFAULT_MODEL_BY_PROVIDER[appSettings.defaultProvider ?? "codex"],
           createdAt,
         });
         await handleNewThread(projectId, {
