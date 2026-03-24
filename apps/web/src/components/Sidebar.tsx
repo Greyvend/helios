@@ -1137,10 +1137,12 @@ export default function Sidebar() {
       <Tooltip>
         <TooltipTrigger
           render={
-            <div className="flex min-w-0 flex-1 items-center gap-1 ml-1 cursor-pointer">
-              <span className="truncate text-sm font-semibold tracking-tight">
-                Helios
-              </span>
+            <div className="flex min-w-0 flex-1 items-center gap-1 -ml-3 cursor-pointer">
+              <img
+                src="/helios-wordmark.png"
+                alt="Helios"
+                className="h-7 w-auto"
+              />
             </div>
           }
         />
