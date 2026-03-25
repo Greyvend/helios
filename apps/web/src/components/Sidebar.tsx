@@ -37,7 +37,6 @@ import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/rea
 import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useAppSettings } from "../appSettings";
 import { isElectron } from "../env";
-import { APP_VERSION } from "../branding";
 import { isLinuxPlatform, isMacPlatform, newCommandId, newProjectId } from "../lib/utils";
 import { useStore } from "../store";
 import { shortcutLabelForCommand } from "../keybindings";
@@ -1130,34 +1129,12 @@ export default function Sidebar() {
     });
   }, []);
 
-  const wordmark = (
-    <div className="flex items-center gap-2">
-      <SidebarTrigger className="shrink-0 md:hidden" />
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <div className="flex min-w-0 flex-1 items-center gap-1 -ml-3 cursor-pointer">
-              <img
-                src="/helios-wordmark.png"
-                alt="Helios"
-                className="h-7 w-auto"
-              />
-            </div>
-          }
-        />
-        <TooltipPopup side="bottom" sideOffset={2}>
-          Version {APP_VERSION}
-        </TooltipPopup>
-      </Tooltip>
-    </div>
-  );
-
   return (
     <>
       {isElectron ? (
         <>
           <SidebarHeader className="drag-region h-[52px] flex-row items-center gap-2 px-4 py-0 pl-[90px]">
-            {wordmark}
+            <SidebarTrigger className="shrink-0 md:hidden" />
             {showDesktopUpdateButton && (
               <Tooltip>
                 <TooltipTrigger
@@ -1181,7 +1158,7 @@ export default function Sidebar() {
         </>
       ) : (
         <SidebarHeader className="gap-3 px-3 py-2 sm:gap-2.5 sm:px-4 sm:py-3">
-          {wordmark}
+          <SidebarTrigger className="shrink-0 md:hidden" />
         </SidebarHeader>
       )}
 
