@@ -1,17 +1,11 @@
 import { Fragment, type ReactNode, createElement, useEffect } from "react";
 import {
-  DEFAULT_MODEL_BY_PROVIDER,
-  DEFAULT_PROVIDER_KIND,
   type ProviderKind,
   ThreadId,
   type OrchestrationReadModel,
   type OrchestrationSessionStatus,
 } from "@helios-dev/contracts";
-import {
-  inferProviderForModel,
-  resolveModelSlug,
-  resolveModelSlugForProvider,
-} from "@helios-dev/shared/model";
+import { resolveModelSlugForProvider } from "@helios-dev/shared/model";
 import { create } from "zustand";
 import { type ChatMessage, type Project, type Thread } from "./types";
 import { Debouncer } from "@tanstack/react-pacer";
@@ -31,12 +25,6 @@ const LEGACY_PERSISTED_STATE_KEYS = [
   "helios:renderer-state:v5",
   "helios:renderer-state:v4",
   "helios:renderer-state:v3",
-  "t3code:renderer-state:v8",
-  "t3code:renderer-state:v7",
-  "t3code:renderer-state:v6",
-  "t3code:renderer-state:v5",
-  "t3code:renderer-state:v4",
-  "t3code:renderer-state:v3",
   "codething:renderer-state:v4",
   "codething:renderer-state:v3",
   "codething:renderer-state:v2",
@@ -144,9 +132,17 @@ function mapProjectsFromReadModel(
       id: project.id,
       name: project.title,
       cwd: project.workspaceRoot,
-      model:
-        existing?.model ??
-        resolveModelSlug(project.defaultModel ?? DEFAULT_MODEL_BY_PROVIDER[DEFAULT_PROVIDER_KIND]),
+      defaultModelSelection:
+        existing?.defaultModelSelection ??
+        (project.defaultModelSelection
+          ? {
+              ...project.defaultModelSelection,
+              model: resolveModelSlugForProvider(
+                project.defaultModelSelection.provider,
+                project.defaultModelSelection.model,
+              ),
+            }
+          : null),
       expanded:
         existing?.expanded ??
         (persistedExpandedProjectCwds.size > 0
@@ -200,17 +196,7 @@ function toLegacyProvider(providerName: string | null): ProviderKind {
   if (providerName === "codex" || providerName === "claudeAgent") {
     return providerName;
   }
-  return DEFAULT_PROVIDER_KIND;
-}
-
-function inferProviderForThreadModel(input: {
-  readonly model: string;
-  readonly sessionProviderName: string | null;
-}): ProviderKind {
-  if (input.sessionProviderName === "codex" || input.sessionProviderName === "claudeAgent") {
-    return input.sessionProviderName;
-  }
-  return inferProviderForModel(input.model);
+  return "codex";
 }
 
 function resolveWsHttpOrigin(): string {
@@ -262,13 +248,13 @@ export function syncServerReadModel(state: AppState, readModel: OrchestrationRea
         codexThreadId: null,
         projectId: thread.projectId,
         title: thread.title,
-        model: resolveModelSlugForProvider(
-          inferProviderForThreadModel({
-            model: thread.model,
-            sessionProviderName: thread.session?.providerName ?? null,
-          }),
-          thread.model,
-        ),
+        modelSelection: {
+          ...thread.modelSelection,
+          model: resolveModelSlugForProvider(
+            thread.modelSelection.provider,
+            thread.modelSelection.model,
+          ),
+        },
         runtimeMode: thread.runtimeMode,
         interactionMode: thread.interactionMode,
         session: thread.session

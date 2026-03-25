@@ -1,4 +1,4 @@
-import { ProjectId, type ProviderKind, type ThreadId } from "@helios-dev/contracts";
+import { ProjectId, type ModelSelection, type ThreadId } from "@helios-dev/contracts";
 import { type ChatMessage, type Thread } from "../types";
 import { randomUUID } from "~/lib/utils";
 import { type ComposerImageAttachment, type DraftThreadState } from "../composerDraftStore";
@@ -17,7 +17,7 @@ export const LastInvokedScriptByProjectSchema = Schema.Record(ProjectId, Schema.
 export function buildLocalDraftThread(
   threadId: ThreadId,
   draftThread: DraftThreadState,
-  fallbackModel: string,
+  fallbackModelSelection: ModelSelection,
   error: string | null,
 ): Thread {
   return {
@@ -25,7 +25,7 @@ export function buildLocalDraftThread(
     codexThreadId: null,
     projectId: draftThread.projectId,
     title: "New thread",
-    model: fallbackModel,
+    modelSelection: fallbackModelSelection,
     runtimeMode: draftThread.runtimeMode,
     interactionMode: draftThread.interactionMode,
     session: null,
