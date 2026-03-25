@@ -14,8 +14,8 @@ const BASE_WEB_PORT = 5733;
 const MAX_HASH_OFFSET = 3000;
 const MAX_PORT = 65535;
 
-export const DEFAULT_HELIOS_HOME = Effect.map(Effect.service(Path.Path), (path) =>
-  path.join(homedir(), ".helios"),
+export const DEFAULT_T3_HOME = Effect.map(Effect.service(Path.Path), (path) =>
+  path.join(homedir(), ".t3"),
 );
 
 const MODE_ARGS = {
@@ -110,7 +110,7 @@ function resolveBaseDir(baseDir: string | undefined): Effect.Effect<string, neve
       return path.resolve(configured);
     }
 
-    return yield* DEFAULT_HELIOS_HOME;
+    return yield* DEFAULT_T3_HOME;
   });
 }
 
@@ -119,7 +119,7 @@ interface CreateDevRunnerEnvInput {
   readonly baseEnv: NodeJS.ProcessEnv;
   readonly serverOffset: number;
   readonly webOffset: number;
-  readonly heliosHome: string | undefined;
+  readonly t3Home: string | undefined;
   readonly authToken: string | undefined;
   readonly noBrowser: boolean | undefined;
   readonly autoBootstrapProjectFromCwd: boolean | undefined;
@@ -134,7 +134,7 @@ export function createDevRunnerEnv({
   baseEnv,
   serverOffset,
   webOffset,
-  heliosHome,
+  t3Home,
   authToken,
   noBrowser,
   autoBootstrapProjectFromCwd,
@@ -146,31 +146,42 @@ export function createDevRunnerEnv({
   return Effect.gen(function* () {
     const serverPort = port ?? BASE_SERVER_PORT + serverOffset;
     const webPort = BASE_WEB_PORT + webOffset;
-    const resolvedBaseDir = yield* resolveBaseDir(heliosHome);
+    const resolvedBaseDir = yield* resolveBaseDir(t3Home);
+    const isDesktopMode = mode === "dev:desktop";
 
     const output: NodeJS.ProcessEnv = {
       ...baseEnv,
-      HELIOS_PORT: String(serverPort),
       PORT: String(webPort),
       ELECTRON_RENDERER_PORT: String(webPort),
-      VITE_WS_URL: `ws://localhost:${serverPort}`,
       VITE_DEV_SERVER_URL: devUrl?.toString() ?? `http://localhost:${webPort}`,
       HELIOS_HOME: resolvedBaseDir,
     };
 
-    if (host !== undefined) {
+    if (!isDesktopMode) {
+      output.HELIOS_PORT = String(serverPort);
+      output.VITE_WS_URL = `ws://localhost:${serverPort}`;
+    } else {
+      delete output.HELIOS_PORT;
+      delete output.VITE_WS_URL;
+      delete output.HELIOS_AUTH_TOKEN;
+      delete output.HELIOS_MODE;
+      delete output.HELIOS_NO_BROWSER;
+      delete output.HELIOS_HOST;
+    }
+
+    if (!isDesktopMode && host !== undefined) {
       output.HELIOS_HOST = host;
     }
 
-    if (authToken !== undefined) {
+    if (!isDesktopMode && authToken !== undefined) {
       output.HELIOS_AUTH_TOKEN = authToken;
-    } else {
+    } else if (!isDesktopMode) {
       delete output.HELIOS_AUTH_TOKEN;
     }
 
-    if (noBrowser !== undefined) {
+    if (!isDesktopMode && noBrowser !== undefined) {
       output.HELIOS_NO_BROWSER = noBrowser ? "1" : "0";
-    } else {
+    } else if (!isDesktopMode) {
       delete output.HELIOS_NO_BROWSER;
     }
 
@@ -193,6 +204,10 @@ export function createDevRunnerEnv({
 
     if (mode === "dev:server" || mode === "dev:web") {
       output.HELIOS_MODE = "web";
+      delete output.HELIOS_DESKTOP_WS_URL;
+    }
+
+    if (isDesktopMode) {
       delete output.HELIOS_DESKTOP_WS_URL;
     }
 
@@ -334,7 +349,7 @@ export function resolveModePortOffsets<R = NetService>({
 
 interface DevRunnerCliInput {
   readonly mode: DevMode;
-  readonly heliosHome: string | undefined;
+  readonly t3Home: string | undefined;
   readonly authToken: string | undefined;
   readonly noBrowser: boolean | undefined;
   readonly autoBootstrapProjectFromCwd: boolean | undefined;
@@ -414,7 +429,7 @@ export function runDevRunnerWithInput(input: DevRunnerCliInput) {
       baseEnv: process.env,
       serverOffset,
       webOffset,
-      heliosHome: input.heliosHome,
+      t3Home: input.t3Home,
       authToken: input.authToken,
       noBrowser: resolveOptionalBooleanOverride(input.noBrowser, envOverrides.noBrowser),
       autoBootstrapProjectFromCwd: resolveOptionalBooleanOverride(
@@ -484,7 +499,7 @@ const devRunnerCli = Command.make("dev-runner", {
   mode: Argument.choice("mode", DEV_RUNNER_MODES).pipe(
     Argument.withDescription("Development mode to run."),
   ),
-  heliosHome: Flag.string("home-dir").pipe(
+  t3Home: Flag.string("home-dir").pipe(
     Flag.withDescription("Base directory for all Helios data (equivalent to HELIOS_HOME)."),
     Flag.withFallbackConfig(optionalStringConfig("HELIOS_HOME")),
   ),
