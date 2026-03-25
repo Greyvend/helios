@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode, createElement, useEffect } from "react";
 import {
   DEFAULT_MODEL_BY_PROVIDER,
+  DEFAULT_PROVIDER_KIND,
   type ProviderKind,
   ThreadId,
   type OrchestrationReadModel,
@@ -145,7 +146,7 @@ function mapProjectsFromReadModel(
       cwd: project.workspaceRoot,
       model:
         existing?.model ??
-        resolveModelSlug(project.defaultModel ?? DEFAULT_MODEL_BY_PROVIDER.codex),
+        resolveModelSlug(project.defaultModel ?? DEFAULT_MODEL_BY_PROVIDER[DEFAULT_PROVIDER_KIND]),
       expanded:
         existing?.expanded ??
         (persistedExpandedProjectCwds.size > 0
@@ -197,7 +198,7 @@ function toLegacyProvider(providerName: string | null): ProviderKind {
   if (providerName === "codex" || providerName === "claudeAgent") {
     return providerName;
   }
-  return "codex";
+  return DEFAULT_PROVIDER_KIND;
 }
 
 function inferProviderForThreadModel(input: {

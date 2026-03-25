@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 import {
   type ProviderKind,
   DEFAULT_GIT_TEXT_GENERATION_MODEL,
-  DEFAULT_MODEL_BY_PROVIDER,
   type ModelSlug,
 } from "@helios-dev/contracts";
 import { getModelOptions, normalizeModelSlug } from "@helios-dev/shared/model";
@@ -133,9 +132,8 @@ function SettingsRouteView() {
   const keybindingsConfigPath = serverConfigQuery.data?.keybindingsConfigPath ?? null;
   const availableEditors = serverConfigQuery.data?.availableEditors;
 
-  const defaultProvider: ProviderKind = settings.defaultProvider ?? "codex";
-  const defaultModel: ModelSlug =
-    settings.defaultModel ?? DEFAULT_MODEL_BY_PROVIDER[defaultProvider];
+  const defaultProvider: ProviderKind = settings.defaultProvider;
+  const defaultModel: ModelSlug = settings.defaultModel;
   const modelOptionsByProvider = useMemo(
     () => getCustomModelOptionsByProvider(settings),
     [settings],

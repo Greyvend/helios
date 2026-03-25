@@ -2,6 +2,7 @@ import {
   CLAUDE_CODE_EFFORT_OPTIONS,
   CODEX_REASONING_EFFORT_OPTIONS,
   DEFAULT_MODEL_BY_PROVIDER,
+  DEFAULT_PROVIDER_KIND,
   DEFAULT_REASONING_EFFORT_BY_PROVIDER,
   MODEL_OPTIONS_BY_PROVIDER,
   MODEL_SLUG_ALIASES_BY_PROVIDER,
@@ -24,11 +25,11 @@ const CLAUDE_OPUS_4_6_MODEL = "claude-opus-4-6";
 const CLAUDE_SONNET_4_6_MODEL = "claude-sonnet-4-6";
 const CLAUDE_HAIKU_4_5_MODEL = "claude-haiku-4-5";
 
-export function getModelOptions(provider: ProviderKind = "codex") {
+export function getModelOptions(provider: ProviderKind = DEFAULT_PROVIDER_KIND) {
   return MODEL_OPTIONS_BY_PROVIDER[provider];
 }
 
-export function getDefaultModel(provider: ProviderKind = "codex"): ModelSlug {
+export function getDefaultModel(provider: ProviderKind = DEFAULT_PROVIDER_KIND): ModelSlug {
   return DEFAULT_MODEL_BY_PROVIDER[provider];
 }
 
@@ -59,7 +60,7 @@ export function isClaudeUltrathinkPrompt(text: string | null | undefined): boole
 
 export function normalizeModelSlug(
   model: string | null | undefined,
-  provider: ProviderKind = "codex",
+  provider: ProviderKind = DEFAULT_PROVIDER_KIND,
 ): ModelSlug | null {
   if (typeof model !== "string") {
     return null;
@@ -79,7 +80,7 @@ export function normalizeModelSlug(
 
 export function resolveModelSlug(
   model: string | null | undefined,
-  provider: ProviderKind = "codex",
+  provider: ProviderKind = DEFAULT_PROVIDER_KIND,
 ): ModelSlug {
   const normalized = normalizeModelSlug(model, provider);
   if (!normalized) {
@@ -100,7 +101,7 @@ export function resolveModelSlugForProvider(
 
 export function inferProviderForModel(
   model: string | null | undefined,
-  fallback: ProviderKind = "codex",
+  fallback: ProviderKind = DEFAULT_PROVIDER_KIND,
 ): ProviderKind {
   const normalizedClaude = normalizeModelSlug(model, "claudeAgent");
   if (normalizedClaude && MODEL_SLUG_SET_BY_PROVIDER.claudeAgent.has(normalizedClaude)) {
@@ -125,7 +126,7 @@ export function getReasoningEffortOptions(
   model?: string | null | undefined,
 ): ReadonlyArray<ProviderReasoningEffort>;
 export function getReasoningEffortOptions(
-  provider: ProviderKind = "codex",
+  provider: ProviderKind = DEFAULT_PROVIDER_KIND,
   model?: string | null | undefined,
 ): ReadonlyArray<ProviderReasoningEffort> {
   if (provider === "claudeAgent") {
@@ -144,7 +145,7 @@ export function getDefaultReasoningEffort(provider: "codex"): CodexReasoningEffo
 export function getDefaultReasoningEffort(provider: "claudeAgent"): ClaudeCodeEffort;
 export function getDefaultReasoningEffort(provider?: ProviderKind): ProviderReasoningEffort;
 export function getDefaultReasoningEffort(
-  provider: ProviderKind = "codex",
+  provider: ProviderKind = DEFAULT_PROVIDER_KIND,
 ): ProviderReasoningEffort {
   return DEFAULT_REASONING_EFFORT_BY_PROVIDER[provider];
 }

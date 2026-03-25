@@ -27,7 +27,6 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { restrictToFirstScrollableAncestor, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  DEFAULT_MODEL_BY_PROVIDER,
   type DesktopUpdateState,
   ProjectId,
   ThreadId,
@@ -419,7 +418,7 @@ export default function Sidebar() {
           projectId,
           title,
           workspaceRoot: cwd,
-          defaultModel: appSettings.defaultModel ?? DEFAULT_MODEL_BY_PROVIDER[appSettings.defaultProvider ?? "codex"],
+          defaultModel: appSettings.defaultModel,
           createdAt,
         });
         await handleNewThread(projectId, {

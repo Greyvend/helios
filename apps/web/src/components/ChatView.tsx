@@ -1,6 +1,5 @@
 import {
   type ApprovalRequestId,
-  DEFAULT_MODEL_BY_PROVIDER,
   type ClaudeCodeEffort,
   type MessageId,
   type ProjectScript,
@@ -462,11 +461,11 @@ export default function ChatView({ threadId }: ChatViewProps) {
         ? buildLocalDraftThread(
             threadId,
             draftThread,
-            fallbackDraftProject?.model ?? settings.defaultModel ?? DEFAULT_MODEL_BY_PROVIDER[settings.defaultProvider ?? "codex"],
+            fallbackDraftProject?.model ?? settings.defaultModel,
             localDraftError,
           )
         : undefined,
-    [draftThread, fallbackDraftProject?.model, settings.defaultModel, settings.defaultProvider, localDraftError, threadId],
+    [draftThread, fallbackDraftProject?.model, settings.defaultModel, localDraftError, threadId],
   );
   const activeThread = serverThread ?? localDraftThread;
   const runtimeMode =
@@ -592,12 +591,12 @@ export default function ChatView({ threadId }: ChatViewProps) {
     ? (sessionProvider ?? selectedProviderByThreadId ?? null)
     : null;
   const selectedProvider: ProviderKind =
-    lockedProvider ?? selectedProviderByThreadId ?? settings.defaultProvider ?? "codex";
+    lockedProvider ?? selectedProviderByThreadId ?? settings.defaultProvider;
   const baseThreadModel = resolveModelSlugForProvider(
     selectedProvider,
     activeThread?.model ??
       activeProject?.model ??
-      (selectedProvider === (settings.defaultProvider ?? "codex")
+      (selectedProvider === settings.defaultProvider
         ? (settings.defaultModel ?? getDefaultModel(selectedProvider))
         : getDefaultModel(selectedProvider)),
   );
@@ -2589,7 +2588,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
       }
       const title = truncateTitle(titleSeed);
       let threadCreateModel: ModelSlug =
-        selectedModel || (activeProject.model as ModelSlug) || settings.defaultModel || DEFAULT_MODEL_BY_PROVIDER[settings.defaultProvider ?? "codex"];
+        selectedModel || (activeProject.model as ModelSlug) || settings.defaultModel;
 
       if (isLocalDraftThread) {
         await api.orchestration.dispatchCommand({
@@ -3041,8 +3040,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
       selectedModel ||
       (activeThread.model as ModelSlug) ||
       (activeProject.model as ModelSlug) ||
-      settings.defaultModel ||
-      DEFAULT_MODEL_BY_PROVIDER[settings.defaultProvider ?? "codex"];
+      settings.defaultModel;
 
     sendInFlightRef.current = true;
     beginSendPhase("sending-turn");

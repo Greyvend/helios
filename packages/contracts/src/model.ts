@@ -53,7 +53,7 @@ export type ModelSlug = BuiltInModelSlug | (string & {});
 
 export const DEFAULT_MODEL_BY_PROVIDER: Record<ProviderKind, ModelSlug> = {
   codex: "gpt-5.4",
-  claudeAgent: "claude-sonnet-4-6",
+  claudeAgent: "claude-opus-4-6",
 };
 
 // Backward compatibility for existing Codex-only call sites.

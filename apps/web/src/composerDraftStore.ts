@@ -2,6 +2,7 @@ import {
   CODEX_REASONING_EFFORT_OPTIONS,
   type ClaudeCodeEffort,
   type CodexReasoningEffort,
+  DEFAULT_PROVIDER_KIND,
   DEFAULT_REASONING_EFFORT_BY_PROVIDER,
   ProjectId,
   ProviderInteractionMode,
@@ -620,7 +621,7 @@ function normalizePersistedDraftsByThreadId(
     const provider = normalizeProviderKind(draftCandidate.provider);
     const model =
       typeof draftCandidate.model === "string"
-        ? normalizeModelSlug(draftCandidate.model, provider ?? "codex")
+        ? normalizeModelSlug(draftCandidate.model, provider ?? DEFAULT_PROVIDER_KIND)
         : null;
     const runtimeMode =
       draftCandidate.runtimeMode === "approval-required" ||
@@ -1181,7 +1182,7 @@ export const useComposerDraftStore = create<ComposerDraftStoreState>()(
         }
         set((state) => {
           const existing = state.draftsByThreadId[threadId];
-          const normalizedModel = normalizeModelSlug(model, existing?.provider ?? "codex") ?? null;
+          const normalizedModel = normalizeModelSlug(model, existing?.provider ?? DEFAULT_PROVIDER_KIND) ?? null;
           if (!existing && normalizedModel === null) {
             return state;
           }
