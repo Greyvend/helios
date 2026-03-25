@@ -568,7 +568,35 @@ const make = Effect.gen(function* () {
     }
 
     // Orchestration turn ids are not provider turn ids, so interrupt by session.
-    yield* providerService.interruptTurn({ threadId: event.payload.threadId });
+    yield* providerService
+      .interruptTurn({ threadId: event.payload.threadId })
+      .pipe(
+        Effect.catch(() =>
+          Effect.logWarning("provider.interruptTurn call failed, proceeding with session reset", {
+            threadId: event.payload.threadId,
+          }),
+        ),
+      );
+
+    // Immediately transition the session out of "running" so the projection
+    // is not left stuck if the provider never emits a turn.completed event
+    // (e.g. the Claude process dies or the interrupt is silently ignored).
+    // If the provider *does* emit turn.completed later, the ingestion layer
+    // will see the session is already "ready" and treat it as a no-op.
+    const now = event.payload.createdAt;
+    yield* setThreadSession({
+      threadId: thread.id,
+      session: {
+        threadId: thread.id,
+        status: "ready",
+        providerName: thread.session!.providerName,
+        runtimeMode: thread.session!.runtimeMode ?? DEFAULT_RUNTIME_MODE,
+        activeTurnId: null,
+        lastError: null,
+        updatedAt: now,
+      },
+      createdAt: now,
+    });
   });
 
   const processApprovalResponseRequested = Effect.fnUntraced(function* (

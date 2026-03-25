@@ -546,7 +546,17 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
             lastRuntimeEventAt: new Date().toISOString(),
           }),
         ).pipe(Effect.asVoid);
-        yield* Effect.forEach(adapters, (adapter) => adapter.stopAll()).pipe(Effect.asVoid);
+        // Stop adapters but do not let a failure here prevent the directory
+        // cleanup below – otherwise provider_session_runtime stays "running"
+        // even though the processes are gone.
+        yield* Effect.forEach(adapters, (adapter) => adapter.stopAll()).pipe(
+          Effect.asVoid,
+          Effect.catch((cause) =>
+            Effect.logWarning("adapter.stopAll failed during shutdown, continuing cleanup", {
+              cause,
+            }),
+          ),
+        );
         yield* Effect.forEach(threadIds, (threadId) =>
           directory.getProvider(threadId).pipe(
             Effect.flatMap((provider) =>
