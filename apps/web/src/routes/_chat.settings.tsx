@@ -340,6 +340,24 @@ function SettingsRouteView() {
   const availableEditors = serverConfigQuery.data?.availableEditors;
   const serverProviders = serverConfigQuery.data?.providers ?? EMPTY_SERVER_PROVIDERS;
 
+  const defaultModelSelection = resolveAppModelSelectionState(
+    settings,
+    serverProviders,
+    settings.defaultModelSelection,
+  );
+  const defaultModelProvider = defaultModelSelection.provider;
+  const defaultModelSlug = defaultModelSelection.model;
+  const defaultModelOptionsByProvider = getCustomModelOptionsByProvider(
+    settings,
+    serverProviders,
+    defaultModelProvider,
+    defaultModelSlug,
+  );
+  const isDefaultModelDirty = !Equal.equals(
+    settings.defaultModelSelection ?? null,
+    DEFAULT_UNIFIED_SETTINGS.defaultModelSelection ?? null,
+  );
+
   const textGenerationModelSelection = resolveAppModelSelectionState(settings, serverProviders);
   const textGenProvider = textGenerationModelSelection.provider;
   const textGenModel = textGenerationModelSelection.model;
@@ -370,6 +388,7 @@ function SettingsRouteView() {
     ...(settings.enableAssistantStreaming !== DEFAULT_UNIFIED_SETTINGS.enableAssistantStreaming
       ? ["Assistant output"]
       : []),
+    ...(isDefaultModelDirty ? ["Default model"] : []),
     ...(settings.defaultThreadEnvMode !== DEFAULT_UNIFIED_SETTINGS.defaultThreadEnvMode
       ? ["New thread mode"]
       : []),
@@ -737,6 +756,44 @@ function SettingsRouteView() {
                       })
                     }
                     aria-label="Stream assistant messages"
+                  />
+                }
+              />
+
+              <SettingsRow
+                title="Default model"
+                description="Model used for new chats by default."
+                resetAction={
+                  isDefaultModelDirty ? (
+                    <SettingResetButton
+                      label="default model"
+                      onClick={() => {
+                        updateSettings({
+                          defaultModelSelection:
+                            DEFAULT_UNIFIED_SETTINGS.defaultModelSelection,
+                        });
+                      }}
+                    />
+                  ) : null
+                }
+                control={
+                  <ProviderModelPicker
+                    provider={defaultModelProvider}
+                    model={defaultModelSlug}
+                    lockedProvider={null}
+                    providers={serverProviders}
+                    modelOptionsByProvider={defaultModelOptionsByProvider}
+                    triggerVariant="outline"
+                    triggerClassName="min-w-0 max-w-none shrink-0 text-foreground/90 hover:text-foreground"
+                    onProviderModelChange={(provider, model) => {
+                      updateSettings({
+                        defaultModelSelection: resolveAppModelSelectionState(
+                          settings,
+                          serverProviders,
+                          { provider, model },
+                        ),
+                      });
+                    }}
                   />
                 }
               />

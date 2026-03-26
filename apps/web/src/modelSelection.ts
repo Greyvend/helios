@@ -211,8 +211,9 @@ export function resolveAppModelSelectionState(
     textGenerationModelSelection: ModelSelection | undefined;
   },
   providers: ReadonlyArray<ServerProvider>,
+  overrideSelection?: ModelSelection | null,
 ): ModelSelection {
-  const selection = settings.textGenerationModelSelection ?? {
+  const selection = overrideSelection ?? settings.textGenerationModelSelection ?? {
     provider: "codex" as const,
     model: DEFAULT_GIT_TEXT_GENERATION_MODEL_BY_PROVIDER.codex,
   };
