@@ -201,6 +201,19 @@ All checks must pass before merging. The pipeline uses Bun lockfile + Turbo cach
 
 ---
 
+## Git Workflow
+
+- **No feature branches** — all work lands directly on `main`. Do not create or maintain long-lived feature branches.
+- **Always push to `main`** — when working in a worktree (or any branch), rebase onto `main` and push there:
+  ```bash
+  git fetch origin main
+  git rebase origin/main
+  git push origin HEAD:main    # works from worktrees where main is checked out elsewhere
+  ```
+- **Rebase, don't merge** — keep history linear. Use `git rebase origin/main` rather than merge commits.
+
+---
+
 ## Common Pitfalls
 
 1. **Don't use barrel imports from `@helios-dev/shared`** — use explicit subpaths
