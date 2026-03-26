@@ -1,14 +1,14 @@
-import { PROVIDER_DISPLAY_NAMES, type ServerProviderStatus } from "@helios-dev/contracts";
+import { PROVIDER_DISPLAY_NAMES, type ServerProvider } from "@helios-dev/contracts";
 import { memo } from "react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { CircleAlertIcon } from "lucide-react";
 
-export const ProviderHealthBanner = memo(function ProviderHealthBanner({
+export const ProviderStatusBanner = memo(function ProviderStatusBanner({
   status,
 }: {
-  status: ServerProviderStatus | null;
+  status: ServerProvider | null;
 }) {
-  if (!status || status.status === "ready") {
+  if (!status || status.status === "ready" || status.status === "disabled") {
     return null;
   }
 
