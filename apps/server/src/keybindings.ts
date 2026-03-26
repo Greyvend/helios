@@ -43,7 +43,7 @@ import {
 } from "effect";
 import * as Semaphore from "effect/Semaphore";
 import { ServerConfig } from "./config";
-import { fromLenientJson } from "@t3tools/shared/schemaJson";
+import { fromLenientJson } from "@helios-dev/shared/schemaJson";
 
 export class KeybindingsConfigError extends Schema.TaggedErrorClass<KeybindingsConfigError>()(
   "KeybindingsConfigParseError",

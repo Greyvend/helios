@@ -6,10 +6,10 @@ import type {
   ServerProviderModel,
   ServerProviderAuthStatus,
   ServerProviderState,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import { Effect, Equal, Layer, Option, Result, Stream } from "effect";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
-import { getDefaultEffort, hasEffortLevel, trimOrNull } from "@t3tools/shared/model";
+import { getDefaultEffort, hasEffortLevel, trimOrNull } from "@helios-dev/shared/model";
 
 import {
   buildServerProvider,
@@ -245,7 +245,7 @@ export const checkClaudeProviderStatus = Effect.fn("checkClaudeProviderStatus")(
           version: null,
           status: "warning",
           authStatus: "unknown",
-          message: "Claude is disabled in T3 Code settings.",
+          message: "Claude is disabled in Helios settings.",
         },
       });
     }

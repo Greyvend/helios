@@ -7,10 +7,10 @@ import type {
   ServerProviderModel,
   ServerProviderAuthStatus,
   ServerProviderState,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import { Effect, Equal, FileSystem, Layer, Option, Path, Result, Stream } from "effect";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
-import { getDefaultEffort, trimOrNull } from "@t3tools/shared/model";
+import { getDefaultEffort, trimOrNull } from "@helios-dev/shared/model";
 
 import {
   buildServerProvider,
@@ -343,7 +343,7 @@ export const checkCodexProviderStatus = Effect.fn("checkCodexProviderStatus")(
           version: null,
           status: "warning",
           authStatus: "unknown",
-          message: "Codex is disabled in T3 Code settings.",
+          message: "Codex is disabled in Helios settings.",
         },
       });
     }

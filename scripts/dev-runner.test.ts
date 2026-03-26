@@ -147,7 +147,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           baseEnv: {},
           serverOffset: 0,
           webOffset: 0,
-          heliosHome: "/tmp/my-t3",
+          heliosHome: "/tmp/my-helios",
           authToken: undefined,
           noBrowser: undefined,
           autoBootstrapProjectFromCwd: undefined,
@@ -157,7 +157,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           devUrl: undefined,
         });
 
-        assert.equal(env.HELIOS_HOME, resolve("/tmp/my-t3"));
+        assert.equal(env.HELIOS_HOME, resolve("/tmp/my-helios"));
       }),
     );
 
@@ -166,16 +166,16 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
         const env = yield* createDevRunnerEnv({
           mode: "dev:desktop",
           baseEnv: {
-            T3CODE_PORT: "3773",
-            T3CODE_AUTH_TOKEN: "stale-token",
-            T3CODE_MODE: "web",
-            T3CODE_NO_BROWSER: "0",
-            T3CODE_HOST: "0.0.0.0",
+            HELIOS_PORT: "3773",
+            HELIOS_AUTH_TOKEN: "stale-token",
+            HELIOS_MODE: "web",
+            HELIOS_NO_BROWSER: "0",
+            HELIOS_HOST: "0.0.0.0",
             VITE_WS_URL: "ws://localhost:3773",
           },
           serverOffset: 0,
           webOffset: 0,
-          t3Home: "/tmp/my-t3",
+          heliosHome: "/tmp/my-helios",
           authToken: "fresh-token",
           noBrowser: true,
           autoBootstrapProjectFromCwd: undefined,
@@ -185,15 +185,15 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           devUrl: undefined,
         });
 
-        assert.equal(env.T3CODE_HOME, resolve("/tmp/my-t3"));
+        assert.equal(env.HELIOS_HOME, resolve("/tmp/my-helios"));
         assert.equal(env.PORT, "5733");
         assert.equal(env.ELECTRON_RENDERER_PORT, "5733");
         assert.equal(env.VITE_DEV_SERVER_URL, "http://localhost:5733");
-        assert.equal(env.T3CODE_PORT, undefined);
-        assert.equal(env.T3CODE_AUTH_TOKEN, undefined);
-        assert.equal(env.T3CODE_MODE, undefined);
-        assert.equal(env.T3CODE_NO_BROWSER, undefined);
-        assert.equal(env.T3CODE_HOST, undefined);
+        assert.equal(env.HELIOS_PORT, undefined);
+        assert.equal(env.HELIOS_AUTH_TOKEN, undefined);
+        assert.equal(env.HELIOS_MODE, undefined);
+        assert.equal(env.HELIOS_NO_BROWSER, undefined);
+        assert.equal(env.HELIOS_HOST, undefined);
         assert.equal(env.VITE_WS_URL, undefined);
       }),
     );

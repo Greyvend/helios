@@ -4,13 +4,13 @@ import {
   type ProviderModelOptions,
   type ServerProviderModel,
   type ThreadId,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import {
   isClaudeUltrathinkPrompt,
   trimOrNull,
   getDefaultEffort,
   hasEffortLevel,
-} from "@t3tools/shared/model";
+} from "@helios-dev/shared/model";
 import type { ReactNode } from "react";
 import {
   getProviderModelCapabilities,

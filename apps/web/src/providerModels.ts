@@ -6,13 +6,13 @@ import {
   type ProviderKind,
   type ServerProvider,
   type ServerProviderModel,
-} from "@t3tools/contracts";
+} from "@helios-dev/contracts";
 import {
   getDefaultEffort,
   hasEffortLevel,
   normalizeModelSlug,
   trimOrNull,
-} from "@t3tools/shared/model";
+} from "@helios-dev/shared/model";
 
 const EMPTY_CAPABILITIES: ModelCapabilities = {
   reasoningEffortLevels: [],
