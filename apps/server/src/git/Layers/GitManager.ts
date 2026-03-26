@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { realpathSync } from "node:fs";
 
 import { Effect, FileSystem, Layer, Path } from "effect";
-import { GitActionProgressEvent, GitActionProgressPhase, ModelSelection } from "@t3tools/contracts";
+import { GitActionProgressEvent, GitActionProgressPhase, ModelSelection } from "@helios-dev/contracts";
 import {
   resolveAutoFeatureBranchName,
   sanitizeBranchFragment,

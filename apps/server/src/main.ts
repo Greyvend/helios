@@ -439,7 +439,7 @@ const logWebSocketEventsFlag = Flag.boolean("log-websocket-events").pipe(
   Flag.optional,
 );
 
-export const t3Cli = Command.make("helios", {
+export const heliosCli = Command.make("helios", {
   mode: modeFlag,
   port: portFlag,
   host: hostFlag,

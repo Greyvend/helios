@@ -11,7 +11,7 @@ import { Effect, Layer, Option, Schema, Stream } from "effect";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
 
 import { ClaudeModelSelection } from "@helios-dev/contracts";
-import { normalizeClaudeModelOptions } from "@helios-dev/shared/model";
+import { normalizeClaudeModelOptions } from "../../provider/Layers/ClaudeProvider.ts";
 import { sanitizeBranchFragment, sanitizeFeatureBranchName } from "@helios-dev/shared/git";
 
 import { TextGenerationError } from "../Errors.ts";
