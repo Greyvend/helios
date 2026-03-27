@@ -56,7 +56,7 @@ import {
   textContainsInlineTerminalContextLabels,
 } from "./userMessageTerminalContexts";
 
-const MAX_VISIBLE_WORK_LOG_ENTRIES = 6;
+const MAX_VISIBLE_WORK_LOG_ENTRIES = 3;
 const ALWAYS_UNVIRTUALIZED_TAIL_ROWS = 8;
 
 interface MessagesTimelineProps {
