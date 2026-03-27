@@ -22,6 +22,8 @@ import ChatMarkdown from "../ChatMarkdown";
 import {
   BotIcon,
   CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   CircleAlertIcon,
   EyeIcon,
   GlobeIcon,
@@ -81,6 +83,10 @@ interface MessagesTimelineProps {
   resolvedTheme: "light" | "dark";
   timestampFormat: TimestampFormat;
   workspaceRoot: string | undefined;
+  collapsedTurns: ReadonlySet<string>;
+  onToggleTurnCollapse: (turnUserMessageId: string) => void;
+  onCollapseAllTurns: () => void;
+  onExpandAllTurns: () => void;
 }
 
 export const MessagesTimeline = memo(function MessagesTimeline({
@@ -105,6 +111,10 @@ export const MessagesTimeline = memo(function MessagesTimeline({
   resolvedTheme,
   timestampFormat,
   workspaceRoot,
+  collapsedTurns,
+  onToggleTurnCollapse,
+  onCollapseAllTurns,
+  onExpandAllTurns,
 }: MessagesTimelineProps) {
   const timelineRootRef = useRef<HTMLDivElement | null>(null);
   const [timelineWidthPx, setTimelineWidthPx] = useState<number | null>(null);
@@ -199,15 +209,106 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     return nextRows;
   }, [timelineEntries, completionDividerBeforeEntryId, isWorking, activeTurnStartedAt]);
 
+  // Build display rows: group by turn, insert fold toggles for collapsed turns,
+  // and track which assistant messages can be folded via their metadata chevron.
+  const { displayRows, turnUserMsgIdByRowId } = useMemo(() => {
+    const result: DisplayTimelineRow[] = [];
+    const rowTurnMap = new Map<string, string>();
+    let currentTurnUserMsgId: string | null = null;
+    let currentTurnAgentRows: TimelineRow[] = [];
+
+    const flushCurrentTurn = () => {
+      if (currentTurnAgentRows.length > 0 && currentTurnUserMsgId) {
+        const isCollapsed = collapsedTurns.has(currentTurnUserMsgId);
+
+        if (isCollapsed) {
+          // Collapsed: replace all agent content with a summary toggle row
+          let assistantPreview: string | null = null;
+          let toolCallCount = 0;
+          for (const agentRow of currentTurnAgentRows) {
+            if (
+              agentRow.kind === "message" &&
+              agentRow.message.role === "assistant" &&
+              !assistantPreview
+            ) {
+              assistantPreview = agentRow.message.text?.slice(0, 120) ?? null;
+            }
+            if (agentRow.kind === "work") {
+              toolCallCount += agentRow.groupedEntries.length;
+            }
+          }
+
+          result.push({
+            kind: "turn-fold-toggle",
+            id: `fold-toggle:${currentTurnUserMsgId}`,
+            createdAt: currentTurnAgentRows[0]?.createdAt ?? "",
+            turnUserMessageId: currentTurnUserMsgId,
+            isCollapsed: true,
+            assistantPreview,
+            toolCallCount,
+          });
+        } else {
+          // Expanded: add all agent rows and map them for fold chevron rendering
+          for (const agentRow of currentTurnAgentRows) {
+            rowTurnMap.set(agentRow.id, currentTurnUserMsgId);
+            result.push(agentRow);
+          }
+        }
+      }
+      currentTurnAgentRows = [];
+    };
+
+    for (const row of rows) {
+      if (row.kind === "message" && row.message.role === "user") {
+        flushCurrentTurn();
+        currentTurnUserMsgId = row.message.id;
+        result.push(row);
+        continue;
+      }
+
+      if (row.kind === "working") {
+        flushCurrentTurn();
+        currentTurnUserMsgId = null;
+        result.push(row);
+        continue;
+      }
+
+      if (currentTurnUserMsgId) {
+        currentTurnAgentRows.push(row);
+      } else {
+        result.push(row);
+      }
+    }
+
+    flushCurrentTurn();
+
+    return { displayRows: result, turnUserMsgIdByRowId: rowTurnMap };
+  }, [rows, collapsedTurns]);
+
+  // Count foldable turns from original rows (turns where a user message is followed by agent content)
+  const foldableTurnCount = useMemo(() => {
+    let count = 0;
+    let lastWasUser = false;
+    for (const row of rows) {
+      if (row.kind === "message" && row.message.role === "user") {
+        lastWasUser = true;
+      } else if (lastWasUser && row.kind !== "working") {
+        count++;
+        lastWasUser = false;
+      }
+    }
+    return count;
+  }, [rows]);
+
   const firstUnvirtualizedRowIndex = useMemo(() => {
-    const firstTailRowIndex = Math.max(rows.length - ALWAYS_UNVIRTUALIZED_TAIL_ROWS, 0);
+    const firstTailRowIndex = Math.max(displayRows.length - ALWAYS_UNVIRTUALIZED_TAIL_ROWS, 0);
     if (!activeTurnInProgress) return firstTailRowIndex;
 
     const turnStartedAtMs =
       typeof activeTurnStartedAt === "string" ? Date.parse(activeTurnStartedAt) : Number.NaN;
     let firstCurrentTurnRowIndex = -1;
     if (!Number.isNaN(turnStartedAtMs)) {
-      firstCurrentTurnRowIndex = rows.findIndex((row) => {
+      firstCurrentTurnRowIndex = displayRows.findIndex((row) => {
         if (row.kind === "working") return true;
         if (!row.createdAt) return false;
         const rowCreatedAtMs = Date.parse(row.createdAt);
@@ -216,7 +317,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     }
 
     if (firstCurrentTurnRowIndex < 0) {
-      firstCurrentTurnRowIndex = rows.findIndex(
+      firstCurrentTurnRowIndex = displayRows.findIndex(
         (row) => row.kind === "message" && row.message.streaming,
       );
     }
@@ -224,7 +325,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     if (firstCurrentTurnRowIndex < 0) return firstTailRowIndex;
 
     for (let index = firstCurrentTurnRowIndex - 1; index >= 0; index -= 1) {
-      const previousRow = rows[index];
+      const previousRow = displayRows[index];
       if (!previousRow || previousRow.kind !== "message") continue;
       if (previousRow.message.role === "user") {
         return Math.min(index, firstTailRowIndex);
@@ -235,21 +336,22 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     }
 
     return Math.min(firstCurrentTurnRowIndex, firstTailRowIndex);
-  }, [activeTurnInProgress, activeTurnStartedAt, rows]);
+  }, [activeTurnInProgress, activeTurnStartedAt, displayRows]);
 
   const virtualizedRowCount = clamp(firstUnvirtualizedRowIndex, {
     minimum: 0,
-    maximum: rows.length,
+    maximum: displayRows.length,
   });
 
   const rowVirtualizer = useVirtualizer({
     count: virtualizedRowCount,
     getScrollElement: () => scrollContainer,
     // Use stable row ids so virtual measurements do not leak across thread switches.
-    getItemKey: (index: number) => rows[index]?.id ?? index,
+    getItemKey: (index: number) => displayRows[index]?.id ?? index,
     estimateSize: (index: number) => {
-      const row = rows[index];
+      const row = displayRows[index];
       if (!row) return 96;
+      if (row.kind === "turn-fold-toggle") return 40;
       if (row.kind === "work") return 112;
       if (row.kind === "proposed-plan") return estimateTimelineProposedPlanHeight(row.proposedPlan);
       if (row.kind === "working") return 40;
@@ -292,7 +394,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
   }, []);
 
   const virtualRows = rowVirtualizer.getVirtualItems();
-  const nonVirtualizedRows = rows.slice(virtualizedRowCount);
+  const nonVirtualizedRows = displayRows.slice(virtualizedRowCount);
   const [allDirectoriesExpandedByTurnId, setAllDirectoriesExpandedByTurnId] = useState<
     Record<string, boolean>
   >({});
@@ -303,13 +405,34 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     }));
   }, []);
 
-  const renderRowContent = (row: TimelineRow) => (
+  const renderRowContent = (row: DisplayTimelineRow) => (
     <div
-      className="pb-4"
+      className={cn("pb-4", row.kind === "turn-fold-toggle" && "pb-1")}
       data-timeline-row-kind={row.kind}
       data-message-id={row.kind === "message" ? row.message.id : undefined}
       data-message-role={row.kind === "message" ? row.message.role : undefined}
     >
+      {row.kind === "turn-fold-toggle" && (
+        <button
+          type="button"
+          className="group/fold flex w-full cursor-pointer items-center gap-2 py-1"
+          onClick={() => onToggleTurnCollapse(row.turnUserMessageId)}
+        >
+          <span className="h-px flex-1 bg-border/30" />
+          <span className="flex items-center gap-1.5 rounded-full border border-border/50 bg-card/80 px-2.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors group-hover/fold:border-border group-hover/fold:text-muted-foreground">
+            <ChevronRightIcon className="size-3" />
+            <span>
+              {row.assistantPreview
+                ? `${row.assistantPreview.slice(0, 60).trim()}${row.assistantPreview.length > 60 ? "…" : ""}`
+                : "Agent response"}
+              {row.toolCallCount > 0 &&
+                ` · ${row.toolCallCount} tool call${row.toolCallCount !== 1 ? "s" : ""}`}
+            </span>
+          </span>
+          <span className="h-px flex-1 bg-border/30" />
+        </button>
+      )}
+
       {row.kind === "work" &&
         (() => {
           const groupId = row.id;
@@ -510,15 +633,33 @@ export const MessagesTimeline = memo(function MessagesTimeline({
                     </div>
                   );
                 })()}
-                <p className="mt-1.5 text-[10px] text-muted-foreground/30">
-                  {formatMessageMeta(
+                {(() => {
+                  const foldTurnId = turnUserMsgIdByRowId.get(row.id);
+                  const metaText = formatMessageMeta(
                     row.message.createdAt,
                     row.message.streaming
                       ? formatElapsed(row.durationStart, nowIso)
                       : formatElapsed(row.durationStart, row.message.completedAt),
                     timestampFormat,
-                  )}
-                </p>
+                  );
+                  if (foldTurnId) {
+                    return (
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <p className="text-[10px] text-muted-foreground/30">{metaText}</p>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-0.5 rounded-md px-1 py-0.5 text-[10px] text-muted-foreground/40 transition-colors hover:bg-accent hover:text-muted-foreground"
+                          onClick={() => onToggleTurnCollapse(foldTurnId)}
+                          title="Fold this response"
+                        >
+                          <ChevronDownIcon className="size-3" />
+                          <span>Fold</span>
+                        </button>
+                      </div>
+                    );
+                  }
+                  return <p className="mt-1.5 text-[10px] text-muted-foreground/30">{metaText}</p>;
+                })()}
               </div>
             </>
           );
@@ -569,10 +710,32 @@ export const MessagesTimeline = memo(function MessagesTimeline({
       data-timeline-root="true"
       className="mx-auto w-full min-w-0 max-w-3xl overflow-x-hidden"
     >
+      {foldableTurnCount > 1 && (
+        <div className="mb-1 flex items-center justify-end gap-1 px-1 py-0.5">
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={onCollapseAllTurns}
+            className="h-5 px-1.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground"
+          >
+            Fold all
+          </Button>
+          <span className="text-[10px] text-muted-foreground/20">|</span>
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={onExpandAllTurns}
+            className="h-5 px-1.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground"
+          >
+            Expand all
+          </Button>
+        </div>
+      )}
+
       {virtualizedRowCount > 0 && (
         <div className="relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
           {virtualRows.map((virtualRow: VirtualItem) => {
-            const row = rows[virtualRow.index];
+            const row = displayRows[virtualRow.index];
             if (!row) return null;
 
             return (
@@ -623,6 +786,18 @@ type TimelineRow =
       proposedPlan: TimelineProposedPlan;
     }
   | { kind: "working"; id: string; createdAt: string | null };
+
+type TurnFoldToggleRow = {
+  kind: "turn-fold-toggle";
+  id: string;
+  createdAt: string;
+  turnUserMessageId: string;
+  isCollapsed: boolean;
+  assistantPreview: string | null;
+  toolCallCount: number;
+};
+
+type DisplayTimelineRow = TimelineRow | TurnFoldToggleRow;
 
 function estimateTimelineProposedPlanHeight(proposedPlan: TimelineProposedPlan): number {
   const estimatedLines = Math.max(1, Math.ceil(proposedPlan.planMarkdown.length / 72));

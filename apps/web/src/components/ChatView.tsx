@@ -339,6 +339,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
   const [pendingUserInputQuestionIndexByRequestId, setPendingUserInputQuestionIndexByRequestId] =
     useState<Record<string, number>>({});
   const [expandedWorkGroups, setExpandedWorkGroups] = useState<Record<string, boolean>>({});
+  const [collapsedTurns, setCollapsedTurns] = useState<Set<string>>(new Set());
   const [planSidebarOpen, setPlanSidebarOpen] = useState(false);
   const [isComposerFooterCompact, setIsComposerFooterCompact] = useState(false);
   // Tracks whether the user explicitly dismissed the sidebar for the active turn.
@@ -610,7 +611,10 @@ export default function ChatView({ threadId }: ChatViewProps) {
   const providerStatuses = serverConfigQuery.data?.providers ?? EMPTY_PROVIDERS;
   const unlockedSelectedProvider = resolveSelectableProvider(
     providerStatuses,
-    selectedProviderByThreadId ?? threadProvider ?? settings.defaultModelSelection?.provider ?? "codex",
+    selectedProviderByThreadId ??
+      threadProvider ??
+      settings.defaultModelSelection?.provider ??
+      "codex",
   );
   const selectedProvider: ProviderKind = lockedProvider ?? unlockedSelectedProvider;
   const { modelOptions: composerModelOptions, selectedModel } = useEffectiveComposerModelState({
@@ -902,6 +906,33 @@ export default function ChatView({ threadId }: ChatViewProps) {
       deriveTimelineEntries(timelineMessages, activeThread?.proposedPlans ?? [], workLogEntries),
     [activeThread?.proposedPlans, timelineMessages, workLogEntries],
   );
+  const turnUserMessageIds = useMemo(
+    () =>
+      timelineEntries
+        .filter(
+          (entry): entry is Extract<typeof entry, { kind: "message" }> =>
+            entry.kind === "message" && entry.message.role === "user",
+        )
+        .map((entry) => entry.message.id as string),
+    [timelineEntries],
+  );
+  const onToggleTurnCollapse = useCallback((turnUserMessageId: string) => {
+    setCollapsedTurns((prev) => {
+      const next = new Set(prev);
+      if (next.has(turnUserMessageId)) {
+        next.delete(turnUserMessageId);
+      } else {
+        next.add(turnUserMessageId);
+      }
+      return next;
+    });
+  }, []);
+  const onCollapseAllTurns = useCallback(() => {
+    setCollapsedTurns(new Set(turnUserMessageIds));
+  }, [turnUserMessageIds]);
+  const onExpandAllTurns = useCallback(() => {
+    setCollapsedTurns(new Set());
+  }, []);
   const { turnDiffSummaries, inferredCheckpointTurnCountByTurnId } =
     useTurnDiffSummaries(activeThread);
   const turnDiffSummaryByAssistantMessageId = useMemo(() => {
@@ -3578,6 +3609,10 @@ export default function ChatView({ threadId }: ChatViewProps) {
                 resolvedTheme={resolvedTheme}
                 timestampFormat={timestampFormat}
                 workspaceRoot={activeProject?.cwd ?? undefined}
+                collapsedTurns={collapsedTurns}
+                onToggleTurnCollapse={onToggleTurnCollapse}
+                onCollapseAllTurns={onCollapseAllTurns}
+                onExpandAllTurns={onExpandAllTurns}
               />
             </div>
 

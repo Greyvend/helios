@@ -89,6 +89,10 @@ describe("MessagesTimeline", () => {
         resolvedTheme="light"
         timestampFormat="locale"
         workspaceRoot={undefined}
+        collapsedTurns={new Set()}
+        onToggleTurnCollapse={() => {}}
+        onCollapseAllTurns={() => {}}
+        onExpandAllTurns={() => {}}
       />,
     );
 
@@ -134,6 +138,10 @@ describe("MessagesTimeline", () => {
         resolvedTheme="light"
         timestampFormat="locale"
         workspaceRoot={undefined}
+        collapsedTurns={new Set()}
+        onToggleTurnCollapse={() => {}}
+        onCollapseAllTurns={() => {}}
+        onExpandAllTurns={() => {}}
       />,
     );
 
