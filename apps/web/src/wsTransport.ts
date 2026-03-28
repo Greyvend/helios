@@ -9,6 +9,8 @@ import {
 import { decodeUnknownJsonResult, formatSchemaError } from "@helios-dev/shared/schemaJson";
 import { Result, Schema } from "effect";
 
+import { resolveServerWsUrl } from "./serverConnection";
+
 type PushListener<C extends WsPushChannel> = (message: WsPushMessage<C>) => void;
 
 interface PendingRequest {
@@ -64,15 +66,10 @@ export class WsTransport {
   private readonly url: string;
 
   constructor(url?: string) {
-    const bridgeUrl = window.desktopBridge?.getWsUrl();
-    const envUrl = import.meta.env.VITE_WS_URL as string | undefined;
-    this.url =
-      url ??
-      (bridgeUrl && bridgeUrl.length > 0
-        ? bridgeUrl
-        : envUrl && envUrl.length > 0
-          ? envUrl
-          : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:${window.location.port}`);
+    this.url = url ?? resolveServerWsUrl();
+    if (!this.url) {
+      throw new Error("WebSocket URL is required");
+    }
     this.connect();
   }
 
