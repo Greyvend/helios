@@ -313,14 +313,18 @@ export const createServer = Effect.fn(function* (): Effect.fn.Return<
         .stat(normalizedWorkspaceRoot)
         .pipe(Effect.catch(() => Effect.succeed(null)));
       if (!workspaceStat) {
-        return yield* new RouteRequestError({
-          message: `Project directory does not exist: ${normalizedWorkspaceRoot}`,
-        });
+        yield* Effect.fail(
+          new RouteRequestError({
+            message: `Project directory does not exist: ${normalizedWorkspaceRoot}`,
+          }),
+        );
       }
       if (workspaceStat.type !== "Directory") {
-        return yield* new RouteRequestError({
-          message: `Project path is not a directory: ${normalizedWorkspaceRoot}`,
-        });
+        yield* Effect.fail(
+          new RouteRequestError({
+            message: `Project path is not a directory: ${normalizedWorkspaceRoot}`,
+          }),
+        );
       }
       return normalizedWorkspaceRoot;
     });
