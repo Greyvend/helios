@@ -1762,10 +1762,38 @@ export const makeGitCore = (options?: { executeOverride?: GitCoreShape["execute"
                 ? ["checkout", localTrackingBranch]
                 : ["checkout", input.branch];
 
-        yield* executeGit("GitCore.checkoutBranch.checkout", input.cwd, checkoutArgs, {
-          timeoutMs: 10_000,
-          fallbackErrorMessage: "git checkout failed",
-        });
+        // Attempt checkout with allowNonZeroExit so we can provide a friendly error
+        // when the failure is due to uncommitted local changes.
+        const checkoutResult = yield* executeGit(
+          "GitCore.checkoutBranch.checkout",
+          input.cwd,
+          checkoutArgs,
+          {
+            timeoutMs: 10_000,
+            allowNonZeroExit: true,
+          },
+        );
+
+        if (checkoutResult.code !== 0) {
+          const stderr = checkoutResult.stderr;
+          const hasDirtyTree =
+            stderr.includes("Please commit your changes or stash them") ||
+            stderr.includes("Your local changes to the following files would be overwritten") ||
+            stderr.includes("The following untracked working tree files would be overwritten");
+
+          const detail = hasDirtyTree
+            ? "You have uncommitted changes that conflict with the target branch. Please commit or stash your changes before switching branches."
+            : stderr.trim() || "git checkout failed";
+
+          return yield* Effect.fail(
+            createGitCommandError(
+              "GitCore.checkoutBranch.checkout",
+              input.cwd,
+              checkoutArgs,
+              detail,
+            ),
+          );
+        }
 
         // Refresh upstream refs in the background so checkout remains responsive.
         yield* Effect.forkScoped(

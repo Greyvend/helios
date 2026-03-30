@@ -55,9 +55,7 @@ export const makeOrchestrationReactor = Effect.gen(function* () {
         continue;
       }
 
-      yield* Effect.log(
-        `startup recovery: resetting stuck session for thread ${thread.id}`,
-      );
+      yield* Effect.log(`startup recovery: resetting stuck session for thread ${thread.id}`);
 
       const now = new Date().toISOString();
       yield* orchestrationEngine

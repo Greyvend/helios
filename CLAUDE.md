@@ -69,48 +69,54 @@ helios/
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Runtime | Node.js 24.13.1+, Bun 1.3.9 |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4 |
-| Routing | TanStack React Router v1 |
-| State | TanStack React Query v5, Zustand v5 |
-| Backend | Effect (functional runtime), WebSocket (ws), node-pty |
-| Persistence | SQLite via @effect/sql-sqlite-bun |
-| Desktop | Electron 40 |
-| Testing | Vitest (unit), Playwright (browser) |
-| Linting | Oxlint, Oxfmt (Rust-based — fast) |
-| Build | Turbo, tsdown |
+| Layer       | Technology                                            |
+| ----------- | ----------------------------------------------------- |
+| Runtime     | Node.js 24.13.1+, Bun 1.3.9                           |
+| Frontend    | React 19, TypeScript, Vite, Tailwind CSS 4            |
+| Routing     | TanStack React Router v1                              |
+| State       | TanStack React Query v5, Zustand v5                   |
+| Backend     | Effect (functional runtime), WebSocket (ws), node-pty |
+| Persistence | SQLite via @effect/sql-sqlite-bun                     |
+| Desktop     | Electron 40                                           |
+| Testing     | Vitest (unit), Playwright (browser)                   |
+| Linting     | Oxlint, Oxfmt (Rust-based — fast)                     |
+| Build       | Turbo, tsdown                                         |
 
 ---
 
 ## Architecture Patterns
 
 ### Event-Sourcing (Commands → Events → Projections)
+
 - `apps/server/src/orchestration/decider.ts` — validates commands, emits events
 - `apps/server/src/orchestration/projector.ts` — applies events to state
 - All domain events persisted to SQLite; use for undo/restore/audit
 
 ### Effect Layers (Dependency Injection)
+
 - Services composed via `Effect.Layer` — no global state
 - `apps/server/src/serverLayers.ts` — wires all layers at boot
 - Swap implementations per layer for tests
 
 ### DrainableWorker (Queue-Based Async)
+
 - `packages/shared/src/DrainableWorker.ts`
 - Use for ordered async flows; `drain()` method for test synchronization
 - Prevents race conditions in checkpoint capture, command processing
 
 ### WebSocket Protocol
+
 - Server pushes typed events on channels: `server.welcome`, `orchestration.domainEvent`, `terminal.event`
 - Client (`apps/web/src/wsTransport.ts`) manages connection states with auto-reconnect
 - Outbound requests queued while disconnected, flushed on reconnect
 
 ### Provider Adapters
+
 - Pluggable JSON-RPC over stdio: `apps/server/src/provider/`
 - `ClaudeAdapter` and `CodexAdapter` normalize provider events to orchestration events
 
 ### Git Checkpointing
+
 - Snapshots stored as hidden Git refs (`refs/helios/...`)
 - Enables per-turn diffs and workspace restore
 - `apps/server/src/checkpointing/`
@@ -120,6 +126,7 @@ helios/
 ## Important Conventions
 
 ### Package Imports
+
 - `@helios-dev/contracts` — import types/schemas (Effect Schema, runtime-validated)
 - `@helios-dev/shared` uses **subpath exports** (no barrel index):
   ```ts
@@ -128,6 +135,7 @@ helios/
   ```
 
 ### File Naming
+
 - `Layers/` — Effect Layer implementations (service wiring)
 - `Services/` — Service interfaces and registries
 - `Errors.ts` — Domain-specific error types per subsystem
@@ -136,6 +144,7 @@ helios/
 - `*.probe.test.ts` — Integration/probe tests
 
 ### TypeScript
+
 - Target: ES2023, strict mode
 - Base config: `tsconfig.base.json`
 - All schemas defined via Effect Schema (provides both TS types AND runtime validation)
@@ -144,21 +153,22 @@ helios/
 
 ## Environment Variables
 
-| Variable | Purpose | Default |
-|----------|---------|---------|
-| `HELIOS_PORT` | Server port | `3773` |
-| `HELIOS_STATE_DIR` | State storage path | `~/.helios/dev` (dev) |
-| `HELIOS_DEV_INSTANCE` | Instance name (hashes to port offset) | — |
-| `HELIOS_PORT_OFFSET` | Explicit numeric port offset | — |
-| `HELIOS_AUTH_TOKEN` | WebSocket auth token | — |
-| `HELIOS_NO_BROWSER` | Skip auto-opening browser | — |
-| `HELIOS_LOG_WS_EVENTS` | Log WebSocket traffic (debug) | — |
-| `HELIOS_MODE` | Runtime mode | — |
-| `HELIOS_DESKTOP_WS_URL` | Desktop WS endpoint | — |
-| `VITE_WS_URL` | WebSocket URL for web dev | — |
-| `HELIOS_WEB_SOURCEMAP` | Sourcemap control (`true`/`false`/`hidden`) | — |
+| Variable                | Purpose                                     | Default               |
+| ----------------------- | ------------------------------------------- | --------------------- |
+| `HELIOS_PORT`           | Server port                                 | `3773`                |
+| `HELIOS_STATE_DIR`      | State storage path                          | `~/.helios/dev` (dev) |
+| `HELIOS_DEV_INSTANCE`   | Instance name (hashes to port offset)       | —                     |
+| `HELIOS_PORT_OFFSET`    | Explicit numeric port offset                | —                     |
+| `HELIOS_AUTH_TOKEN`     | WebSocket auth token                        | —                     |
+| `HELIOS_NO_BROWSER`     | Skip auto-opening browser                   | —                     |
+| `HELIOS_LOG_WS_EVENTS`  | Log WebSocket traffic (debug)               | —                     |
+| `HELIOS_MODE`           | Runtime mode                                | —                     |
+| `HELIOS_DESKTOP_WS_URL` | Desktop WS endpoint                         | —                     |
+| `VITE_WS_URL`           | WebSocket URL for web dev                   | —                     |
+| `HELIOS_WEB_SOURCEMAP`  | Sourcemap control (`true`/`false`/`hidden`) | —                     |
 
 **User config files** (at runtime):
+
 - `~/.helios/keybindings.json` — keybinding overrides
 - `~/.helios/editor-preferences.json` — editor preferences
 
@@ -170,6 +180,7 @@ helios/
 - Web (Vite): `5733` (default)
 
 To run multiple isolated instances on the same machine:
+
 ```bash
 HELIOS_DEV_INSTANCE=feature-xyz bun run dev:desktop
 ```

@@ -769,8 +769,7 @@ function SettingsRouteView() {
                       label="default model"
                       onClick={() => {
                         updateSettings({
-                          defaultModelSelection:
-                            DEFAULT_UNIFIED_SETTINGS.defaultModelSelection,
+                          defaultModelSelection: DEFAULT_UNIFIED_SETTINGS.defaultModelSelection,
                         });
                       }}
                     />

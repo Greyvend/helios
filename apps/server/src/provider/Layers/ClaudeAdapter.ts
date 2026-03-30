@@ -40,7 +40,11 @@ import {
   type UserInputQuestion,
   ClaudeCodeEffort,
 } from "@helios-dev/contracts";
-import { hasEffortLevel, applyClaudePromptEffortPrefix, trimOrNull } from "@helios-dev/shared/model";
+import {
+  hasEffortLevel,
+  applyClaudePromptEffortPrefix,
+  trimOrNull,
+} from "@helios-dev/shared/model";
 import {
   Cause,
   DateTime,

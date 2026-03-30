@@ -30,7 +30,13 @@ const MODE_ARGS = {
   ],
   "dev:server": ["run", "dev", "--filter=helios"],
   "dev:web": ["run", "dev", "--filter=@helios-dev/web"],
-  "dev:desktop": ["run", "dev", "--filter=@helios-dev/desktop", "--filter=@helios-dev/web", "--parallel"],
+  "dev:desktop": [
+    "run",
+    "dev",
+    "--filter=@helios-dev/desktop",
+    "--filter=@helios-dev/web",
+    "--parallel",
+  ],
 } as const satisfies Record<string, ReadonlyArray<string>>;
 
 type DevMode = keyof typeof MODE_ARGS;

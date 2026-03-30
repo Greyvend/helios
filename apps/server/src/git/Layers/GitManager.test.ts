@@ -245,8 +245,7 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
 
     if (args[0] === "pr" && args[1] === "create") {
       return Effect.succeed({
-        stdout:
-          (scenario.createdPrUrl ?? "https://github.com/Greyvend/helios/pull/101") + "\n",
+        stdout: (scenario.createdPrUrl ?? "https://github.com/Greyvend/helios/pull/101") + "\n",
         stderr: "",
         code: 0,
         signal: null,

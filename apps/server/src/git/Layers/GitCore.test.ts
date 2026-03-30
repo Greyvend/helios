@@ -697,7 +697,7 @@ it.layer(TestLayer)("git integration", (it) => {
         }),
     );
 
-    it.effect("throws when checkout would overwrite uncommitted changes", () =>
+    it.effect("shows friendly error when checkout would overwrite uncommitted changes", () =>
       Effect.gen(function* () {
         const tmp = yield* makeTmpDir();
         yield* initRepoWithCommit(tmp);
@@ -723,11 +723,16 @@ it.layer(TestLayer)("git integration", (it) => {
         // Make uncommitted changes to the same file
         yield* writeTextFile(path.join(tmp, "README.md"), "conflicting local\n");
 
-        // Checkout should fail due to uncommitted changes
+        // Checkout should fail with a user-friendly error message.
         const result = yield* Effect.result(
           (yield* GitCore).checkoutBranch({ cwd: tmp, branch: "other" }),
         );
         expect(result._tag).toBe("Failure");
+        if (result._tag === "Failure") {
+          expect(result.failure.message).toContain(
+            "You have uncommitted changes that conflict with the target branch",
+          );
+        }
       }),
     );
   });
@@ -1179,7 +1184,7 @@ it.layer(TestLayer)("git integration", (it) => {
   // ── Full flow: checkout conflict ──
 
   describe("full flow: checkout conflict", () => {
-    it.effect("uncommitted changes prevent checkout to a diverged branch", () =>
+    it.effect("uncommitted changes prevent checkout to a diverged branch with friendly error", () =>
       Effect.gen(function* () {
         const tmp = yield* makeTmpDir();
         yield* initRepoWithCommit(tmp);
@@ -1199,7 +1204,7 @@ it.layer(TestLayer)("git integration", (it) => {
         // Make local uncommitted changes to the same file
         yield* writeTextFile(path.join(tmp, "README.md"), "local uncommitted\n");
 
-        // Attempt checkout should fail
+        // Checkout should fail with a user-friendly error.
         const failedCheckout = yield* Effect.result(
           (yield* GitCore).checkoutBranch({ cwd: tmp, branch: "diverged" }),
         );

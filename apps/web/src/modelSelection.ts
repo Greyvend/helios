@@ -179,7 +179,12 @@ export function resolveAppModelSelection(
 ): string {
   const customModelsForProvider = getCustomModelsForProvider(settings, provider);
   const serverModels = getServerProviderModels(providers, provider);
-  const options = getAppModelOptions(provider, serverModels, customModelsForProvider, selectedModel);
+  const options = getAppModelOptions(
+    provider,
+    serverModels,
+    customModelsForProvider,
+    selectedModel,
+  );
   return resolveSelectableModel(provider, selectedModel, options) ?? getDefaultModel(provider);
 }
 
@@ -213,10 +218,11 @@ export function resolveAppModelSelectionState(
   providers: ReadonlyArray<ServerProvider>,
   overrideSelection?: ModelSelection | null,
 ): ModelSelection {
-  const selection = overrideSelection ?? settings.textGenerationModelSelection ?? {
-    provider: "codex" as const,
-    model: DEFAULT_GIT_TEXT_GENERATION_MODEL_BY_PROVIDER.codex,
-  };
+  const selection = overrideSelection ??
+    settings.textGenerationModelSelection ?? {
+      provider: "codex" as const,
+      model: DEFAULT_GIT_TEXT_GENERATION_MODEL_BY_PROVIDER.codex,
+    };
   const provider = selection.provider;
   const model = resolveAppModelSelection(provider, settings, providers, selection.model);
   const providerModels = getServerProviderModels(providers, provider);
