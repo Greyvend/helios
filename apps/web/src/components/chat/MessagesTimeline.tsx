@@ -409,8 +409,8 @@ export const MessagesTimeline = memo(function MessagesTimeline({
             onClick={() => onToggleTurnCollapse(row.turnUserMessageId)}
           >
             <span className="h-px flex-1 bg-border/30" />
-            <span className="flex items-center gap-1.5 rounded-full border border-border/50 bg-card/80 px-2.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors group-hover/fold:border-border group-hover/fold:text-muted-foreground">
-              <ChevronRightIcon className="size-3" />
+            <span className="flex items-center gap-1.5 rounded-full border border-border/60 bg-card/80 px-2.5 py-0.5 text-[10px] text-muted-foreground/60 transition-colors group-hover/fold:border-border group-hover/fold:text-muted-foreground">
+              <ChevronRightIcon className="size-3.5" />
               <span>
                 {row.assistantPreview
                   ? `${row.assistantPreview.slice(0, 60).trim()}${row.assistantPreview.length > 60 ? "…" : ""}`
@@ -428,10 +428,10 @@ export const MessagesTimeline = memo(function MessagesTimeline({
             onClick={() => onToggleTurnCollapse(row.turnUserMessageId)}
             title="Fold this response"
           >
-            <span className="text-muted-foreground/25 transition-colors group-hover/fold:text-muted-foreground/60">
-              <ChevronDownIcon className="size-3.5" />
+            <span className="text-muted-foreground/50 transition-colors group-hover/fold:text-muted-foreground">
+              <ChevronDownIcon className="size-4" />
             </span>
-            <span className="h-px flex-1 bg-border/20 transition-colors group-hover/fold:bg-border/50" />
+            <span className="h-px flex-1 bg-border/40 transition-colors group-hover/fold:bg-border/70" />
           </button>
         ))}
 
