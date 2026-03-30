@@ -91,8 +91,6 @@ describe("MessagesTimeline", () => {
         workspaceRoot={undefined}
         collapsedTurns={new Set()}
         onToggleTurnCollapse={() => {}}
-        onCollapseAllTurns={() => {}}
-        onExpandAllTurns={() => {}}
       />,
     );
 
@@ -140,8 +138,6 @@ describe("MessagesTimeline", () => {
         workspaceRoot={undefined}
         collapsedTurns={new Set()}
         onToggleTurnCollapse={() => {}}
-        onCollapseAllTurns={() => {}}
-        onExpandAllTurns={() => {}}
       />,
     );
 

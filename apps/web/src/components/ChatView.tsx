@@ -933,6 +933,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
   const onExpandAllTurns = useCallback(() => {
     setCollapsedTurns(new Set());
   }, []);
+  const foldableTurnCount = turnUserMessageIds.length;
   const { turnDiffSummaries, inferredCheckpointTurnCountByTurnId } =
     useTurnDiffSummaries(activeThread);
   const turnDiffSummaryByAssistantMessageId = useMemo(() => {
@@ -3556,6 +3557,10 @@ export default function ChatView({ threadId }: ChatViewProps) {
           onDeleteProjectScript={deleteProjectScript}
           onToggleTerminal={toggleTerminalVisibility}
           onToggleDiff={onToggleDiff}
+          foldableTurnCount={foldableTurnCount}
+          allCollapsed={collapsedTurns.size >= foldableTurnCount && foldableTurnCount > 0}
+          onCollapseAllTurns={onCollapseAllTurns}
+          onExpandAllTurns={onExpandAllTurns}
         />
       </header>
 
@@ -3611,8 +3616,6 @@ export default function ChatView({ threadId }: ChatViewProps) {
                 workspaceRoot={activeProject?.cwd ?? undefined}
                 collapsedTurns={collapsedTurns}
                 onToggleTurnCollapse={onToggleTurnCollapse}
-                onCollapseAllTurns={onCollapseAllTurns}
-                onExpandAllTurns={onExpandAllTurns}
               />
             </div>
 

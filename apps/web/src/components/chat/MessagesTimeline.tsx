@@ -85,8 +85,6 @@ interface MessagesTimelineProps {
   workspaceRoot: string | undefined;
   collapsedTurns: ReadonlySet<string>;
   onToggleTurnCollapse: (turnUserMessageId: string) => void;
-  onCollapseAllTurns: () => void;
-  onExpandAllTurns: () => void;
 }
 
 export const MessagesTimeline = memo(function MessagesTimeline({
@@ -113,8 +111,6 @@ export const MessagesTimeline = memo(function MessagesTimeline({
   workspaceRoot,
   collapsedTurns,
   onToggleTurnCollapse,
-  onCollapseAllTurns,
-  onExpandAllTurns,
 }: MessagesTimelineProps) {
   const timelineRootRef = useRef<HTMLDivElement | null>(null);
   const [timelineWidthPx, setTimelineWidthPx] = useState<number | null>(null);
@@ -209,11 +205,11 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     return nextRows;
   }, [timelineEntries, completionDividerBeforeEntryId, isWorking, activeTurnStartedAt]);
 
-  // Build display rows: group by turn, insert fold toggles for collapsed turns,
-  // and track which assistant messages can be folded via their metadata chevron.
-  const { displayRows, turnUserMsgIdByRowId } = useMemo(() => {
+  // Build display rows: group by turn. For each turn (user message followed by
+  // agent content), insert a fold-separator before the first agent row when expanded,
+  // or a collapsed-summary pill when folded.
+  const displayRows = useMemo<DisplayTimelineRow[]>(() => {
     const result: DisplayTimelineRow[] = [];
-    const rowTurnMap = new Map<string, string>();
     let currentTurnUserMsgId: string | null = null;
     let currentTurnAgentRows: TimelineRow[] = [];
 
@@ -222,7 +218,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
         const isCollapsed = collapsedTurns.has(currentTurnUserMsgId);
 
         if (isCollapsed) {
-          // Collapsed: replace all agent content with a summary toggle row
+          // Collapsed: replace all agent content with a summary pill
           let assistantPreview: string | null = null;
           let toolCallCount = 0;
           for (const agentRow of currentTurnAgentRows) {
@@ -248,9 +244,17 @@ export const MessagesTimeline = memo(function MessagesTimeline({
             toolCallCount,
           });
         } else {
-          // Expanded: add all agent rows and map them for fold chevron rendering
+          // Expanded: insert a fold-separator line, then all agent rows
+          result.push({
+            kind: "turn-fold-toggle",
+            id: `fold-toggle:${currentTurnUserMsgId}`,
+            createdAt: currentTurnAgentRows[0]?.createdAt ?? "",
+            turnUserMessageId: currentTurnUserMsgId,
+            isCollapsed: false,
+            assistantPreview: null,
+            toolCallCount: 0,
+          });
           for (const agentRow of currentTurnAgentRows) {
-            rowTurnMap.set(agentRow.id, currentTurnUserMsgId);
             result.push(agentRow);
           }
         }
@@ -282,23 +286,8 @@ export const MessagesTimeline = memo(function MessagesTimeline({
 
     flushCurrentTurn();
 
-    return { displayRows: result, turnUserMsgIdByRowId: rowTurnMap };
+    return result;
   }, [rows, collapsedTurns]);
-
-  // Count foldable turns from original rows (turns where a user message is followed by agent content)
-  const foldableTurnCount = useMemo(() => {
-    let count = 0;
-    let lastWasUser = false;
-    for (const row of rows) {
-      if (row.kind === "message" && row.message.role === "user") {
-        lastWasUser = true;
-      } else if (lastWasUser && row.kind !== "working") {
-        count++;
-        lastWasUser = false;
-      }
-    }
-    return count;
-  }, [rows]);
 
   const firstUnvirtualizedRowIndex = useMemo(() => {
     const firstTailRowIndex = Math.max(displayRows.length - ALWAYS_UNVIRTUALIZED_TAIL_ROWS, 0);
@@ -351,7 +340,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     estimateSize: (index: number) => {
       const row = displayRows[index];
       if (!row) return 96;
-      if (row.kind === "turn-fold-toggle") return 40;
+      if (row.kind === "turn-fold-toggle") return row.isCollapsed ? 40 : 28;
       if (row.kind === "work") return 112;
       if (row.kind === "proposed-plan") return estimateTimelineProposedPlanHeight(row.proposedPlan);
       if (row.kind === "working") return 40;
@@ -412,26 +401,39 @@ export const MessagesTimeline = memo(function MessagesTimeline({
       data-message-id={row.kind === "message" ? row.message.id : undefined}
       data-message-role={row.kind === "message" ? row.message.role : undefined}
     >
-      {row.kind === "turn-fold-toggle" && (
-        <button
-          type="button"
-          className="group/fold flex w-full cursor-pointer items-center gap-2 py-1"
-          onClick={() => onToggleTurnCollapse(row.turnUserMessageId)}
-        >
-          <span className="h-px flex-1 bg-border/30" />
-          <span className="flex items-center gap-1.5 rounded-full border border-border/50 bg-card/80 px-2.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors group-hover/fold:border-border group-hover/fold:text-muted-foreground">
-            <ChevronRightIcon className="size-3" />
-            <span>
-              {row.assistantPreview
-                ? `${row.assistantPreview.slice(0, 60).trim()}${row.assistantPreview.length > 60 ? "…" : ""}`
-                : "Agent response"}
-              {row.toolCallCount > 0 &&
-                ` · ${row.toolCallCount} tool call${row.toolCallCount !== 1 ? "s" : ""}`}
+      {row.kind === "turn-fold-toggle" &&
+        (row.isCollapsed ? (
+          <button
+            type="button"
+            className="group/fold flex w-full cursor-pointer items-center gap-2 py-1"
+            onClick={() => onToggleTurnCollapse(row.turnUserMessageId)}
+          >
+            <span className="h-px flex-1 bg-border/30" />
+            <span className="flex items-center gap-1.5 rounded-full border border-border/50 bg-card/80 px-2.5 py-0.5 text-[10px] text-muted-foreground/50 transition-colors group-hover/fold:border-border group-hover/fold:text-muted-foreground">
+              <ChevronRightIcon className="size-3" />
+              <span>
+                {row.assistantPreview
+                  ? `${row.assistantPreview.slice(0, 60).trim()}${row.assistantPreview.length > 60 ? "…" : ""}`
+                  : "Agent response"}
+                {row.toolCallCount > 0 &&
+                  ` · ${row.toolCallCount} tool call${row.toolCallCount !== 1 ? "s" : ""}`}
+              </span>
             </span>
-          </span>
-          <span className="h-px flex-1 bg-border/30" />
-        </button>
-      )}
+            <span className="h-px flex-1 bg-border/30" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="group/fold flex w-full cursor-pointer items-center gap-2 py-0.5"
+            onClick={() => onToggleTurnCollapse(row.turnUserMessageId)}
+            title="Fold this response"
+          >
+            <span className="text-muted-foreground/25 transition-colors group-hover/fold:text-muted-foreground/60">
+              <ChevronDownIcon className="size-3.5" />
+            </span>
+            <span className="h-px flex-1 bg-border/20 transition-colors group-hover/fold:bg-border/50" />
+          </button>
+        ))}
 
       {row.kind === "work" &&
         (() => {
@@ -633,33 +635,15 @@ export const MessagesTimeline = memo(function MessagesTimeline({
                     </div>
                   );
                 })()}
-                {(() => {
-                  const foldTurnId = turnUserMsgIdByRowId.get(row.id);
-                  const metaText = formatMessageMeta(
+                <p className="mt-1.5 text-[10px] text-muted-foreground/30">
+                  {formatMessageMeta(
                     row.message.createdAt,
                     row.message.streaming
                       ? formatElapsed(row.durationStart, nowIso)
                       : formatElapsed(row.durationStart, row.message.completedAt),
                     timestampFormat,
-                  );
-                  if (foldTurnId) {
-                    return (
-                      <div className="mt-1.5 flex items-center gap-1.5">
-                        <p className="text-[10px] text-muted-foreground/30">{metaText}</p>
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-0.5 rounded-md px-1 py-0.5 text-[10px] text-muted-foreground/40 transition-colors hover:bg-accent hover:text-muted-foreground"
-                          onClick={() => onToggleTurnCollapse(foldTurnId)}
-                          title="Fold this response"
-                        >
-                          <ChevronDownIcon className="size-3" />
-                          <span>Fold</span>
-                        </button>
-                      </div>
-                    );
-                  }
-                  return <p className="mt-1.5 text-[10px] text-muted-foreground/30">{metaText}</p>;
-                })()}
+                  )}
+                </p>
               </div>
             </>
           );
@@ -710,28 +694,6 @@ export const MessagesTimeline = memo(function MessagesTimeline({
       data-timeline-root="true"
       className="mx-auto w-full min-w-0 max-w-3xl overflow-x-hidden"
     >
-      {foldableTurnCount > 1 && (
-        <div className="mb-1 flex items-center justify-end gap-1 px-1 py-0.5">
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={onCollapseAllTurns}
-            className="h-5 px-1.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground"
-          >
-            Fold all
-          </Button>
-          <span className="text-[10px] text-muted-foreground/20">|</span>
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={onExpandAllTurns}
-            className="h-5 px-1.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground"
-          >
-            Expand all
-          </Button>
-        </div>
-      )}
-
       {virtualizedRowCount > 0 && (
         <div className="relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
           {virtualRows.map((virtualRow: VirtualItem) => {

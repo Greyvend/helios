@@ -6,11 +6,12 @@ import {
 } from "@helios-dev/contracts";
 import { memo } from "react";
 import GitActionsControl from "../GitActionsControl";
-import { DiffIcon, TerminalSquareIcon } from "lucide-react";
+import { ChevronsDownUpIcon, ChevronsUpDownIcon, DiffIcon, TerminalSquareIcon } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import ProjectScriptsControl, { type NewProjectScriptInput } from "../ProjectScriptsControl";
 import { Toggle } from "../ui/toggle";
+import { Button } from "../ui/button";
 import { SidebarTrigger } from "../ui/sidebar";
 import { OpenInPicker } from "./OpenInPicker";
 
@@ -36,6 +37,10 @@ interface ChatHeaderProps {
   onDeleteProjectScript: (scriptId: string) => Promise<void>;
   onToggleTerminal: () => void;
   onToggleDiff: () => void;
+  foldableTurnCount: number;
+  allCollapsed: boolean;
+  onCollapseAllTurns: () => void;
+  onExpandAllTurns: () => void;
 }
 
 export const ChatHeader = memo(function ChatHeader({
@@ -60,6 +65,10 @@ export const ChatHeader = memo(function ChatHeader({
   onDeleteProjectScript,
   onToggleTerminal,
   onToggleDiff,
+  foldableTurnCount,
+  allCollapsed,
+  onCollapseAllTurns,
+  onExpandAllTurns,
 }: ChatHeaderProps) {
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -150,6 +159,30 @@ export const ChatHeader = memo(function ChatHeader({
                 : "Toggle diff panel"}
           </TooltipPopup>
         </Tooltip>
+        {foldableTurnCount > 1 && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  className="shrink-0"
+                  variant="outline"
+                  size="xs"
+                  aria-label={allCollapsed ? "Expand all responses" : "Fold all responses"}
+                  onClick={allCollapsed ? onExpandAllTurns : onCollapseAllTurns}
+                >
+                  {allCollapsed ? (
+                    <ChevronsUpDownIcon className="size-3" />
+                  ) : (
+                    <ChevronsDownUpIcon className="size-3" />
+                  )}
+                </Button>
+              }
+            />
+            <TooltipPopup side="bottom">
+              {allCollapsed ? "Expand all responses" : "Fold all responses"}
+            </TooltipPopup>
+          </Tooltip>
+        )}
       </div>
     </div>
   );
